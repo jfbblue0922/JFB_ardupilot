@@ -69,4 +69,16 @@ void AP_RangeFinder_Backend_Serial::update(void)
     } else if (AP_HAL::millis() - state.last_reading_ms > read_timeout_ms()) {
         set_status(RangeFinder::Status::NoData);
     }
+
+    if (set_writeing_flg == false) {
+        set_writeing_flg = true;
+    }   
+}
+
+void AP_RangeFinder_Backend_Serial::handle_command_long(const int16_t msg, const float param1, const float param2)
+{
+    if (set_writeing_flg == true) {
+        set_writeing(msg, param1, param2);
+        set_writeing_flg = false;    
+    }
 }

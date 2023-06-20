@@ -89,6 +89,8 @@ public:
         MSP = 32,
         USD1_CAN = 33,
         Benewake_CAN = 34,
+
+        JRE30_Serial = 37,
         SITL = 100,
     };
 
@@ -146,6 +148,7 @@ public:
 
     // Handle an incoming DISTANCE_SENSOR message (from a MAVLink enabled range finder)
     void handle_msg(const mavlink_message_t &msg);
+    void handle_command_long(const int16_t msg, const float param1, const float param2);
 
 #if HAL_MSP_RANGEFINDER_ENABLED
     // Handle an incoming DISTANCE_SENSOR message (from a MSP enabled range finder)

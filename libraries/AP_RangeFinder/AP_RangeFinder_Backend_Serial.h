@@ -33,4 +33,11 @@ protected:
 
     // maximum time between readings before we change state to NoData:
     virtual uint16_t read_timeout_ms() const { return 200; }
+
+    virtual void handle_command_long(const int16_t msg, const float param1, const float param2) override;
+
+    virtual bool set_writeing(uint16_t cmd, float param1, float param2) {return false;};
+
+private:
+    bool set_writeing_flg;
 };

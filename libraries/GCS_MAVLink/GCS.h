@@ -535,6 +535,8 @@ protected:
      */
     uint32_t correct_offboard_timestamp_usec_to_ms(uint64_t offboard_usec, uint16_t payload_size);
 
+    MAV_RESULT handle_jre30_mag(const mavlink_command_long_t &packet);
+
 private:
 
     // last time we got a non-zero RSSI from RADIO_STATUS

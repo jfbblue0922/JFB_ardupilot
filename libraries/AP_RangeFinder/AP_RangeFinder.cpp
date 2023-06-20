@@ -50,6 +50,9 @@
 #include "AP_RangeFinder_USD1_CAN.h"
 #include "AP_RangeFinder_Benewake_CAN.h"
 
+#include "AP_RangeFinder_Backend_Serial.h"
+#include "AP_RangeFinder_JRE30_Serial.h"
+
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>
@@ -339,6 +342,8 @@ bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend, uint8_t instance
  */
 void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
 {
+    AP_RangeFinder_Backend_Serial *(*serial_create_fn)(RangeFinder::RangeFinder_State&, AP_RangeFinder_Params&) = nullptr;
+
     const Type _type = (Type)params[instance].type.get();
     switch (_type) {
     case Type::PLI2C:
@@ -578,10 +583,24 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
     case Type::Benewake_CAN:
         _add_backend(new AP_RangeFinder_Benewake_CAN(state[instance], params[instance]), instance);
         break;
+    case Type::JRE30_Serial:
+#if AP_RANGEFINDER_JRE30_SERIAL_ENABLED
+        serial_create_fn = AP_RangeFinder_JRE30_Serial::create;
+#endif
+        break;
 #endif
     case Type::NONE:
     default:
         break;
+    }
+
+    if (serial_create_fn != nullptr) {
+        if (AP::serialmanager().have_serial(AP_SerialManager::SerialProtocol_Rangefinder, serial_instance)) {
+            auto *b = serial_create_fn(state[instance], params[instance]);
+            if (b != nullptr) {
+                _add_backend(b, instance, serial_instance++);
+            }
+        }
     }
 
     // if the backend has some local parameters then make those available in the tree
@@ -622,6 +641,16 @@ void RangeFinder::handle_msg(const mavlink_message_t &msg)
     for (i=0; i<num_instances; i++) {
         if ((drivers[i] != nullptr) && ((Type)params[i].type.get() != Type::NONE)) {
           drivers[i]->handle_msg(msg);
+        }
+    }
+}
+
+void RangeFinder::handle_command_long(const int16_t msg, const float param1, const float param2)
+{
+    uint8_t i;
+    for (i=0; i<num_instances; i++) {
+        if ((drivers[i] != nullptr) && ((Type)params[i].type.get() == Type::JRE30_Serial)) {
+          drivers[i]->handle_command_long(msg, param1, param2);
         }
     }
 }
