@@ -129,6 +129,8 @@ AP_HW_Nucleo491                      1040
 AP_HW_mRoM10095                      1041
 AP_HW_FlywooF745Nano                 1042
 
+AP_HW_JFB100                         1084
+
 AP_HW_CUBEORANGE_PERIPH              1400
 AP_HW_CUBEBLACK_PERIPH               1401
 AP_HW_PIXRACER_PERIPH                1402
