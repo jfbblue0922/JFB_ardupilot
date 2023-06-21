@@ -120,8 +120,9 @@ bool AP_RangeFinder_JRE30_Serial::get_reading(uint16_t &reading_cm)
                 //);
                 // UPDATE DATA
                 reading_cm = (data_buff[4] * 256 + data_buff[5]);
-                update_status();
+                state.distance_cm = reading_cm;
                 state.last_reading_ms = AP_HAL::millis();
+                update_status();
                 // data clear
                 clear_data_buff();
             } else {
