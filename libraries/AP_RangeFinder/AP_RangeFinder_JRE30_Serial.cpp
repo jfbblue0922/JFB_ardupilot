@@ -40,7 +40,7 @@ static uint16_t CalcCRC16CCITT(uint8_t *cbuffer, uint16_t csize)
             }
 		}
 	}
-	crc = ~crc;
+	crc = crc ^ 0xffff;
 	return crc;
 }
 
