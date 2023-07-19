@@ -15,7 +15,7 @@
 /Tools/autotest/rover-ch7_mission.txt
 /tmp/*
 # Exclude all bins but allow font bins
-*.bin
+### *.bin
 !*_bl.bin
 !font*.bin
 *.d
@@ -24,7 +24,7 @@
 *.elf
 *.exe
 *.generated.h
-*.hex
+### *.hex
 *.lst
 *.o
 *.obj
@@ -78,7 +78,7 @@ LASTLOG.TXT
 Make.dep
 Thumbs.db
 autotest.lck
-build
+### build
 cmake_install.cmake
 config.mk
 cscope.in.out
@@ -102,7 +102,7 @@ GPATH
 GRTAGS
 GTAGS
 config.mk
-*.apj
+### *.apj
 .gdbinit
 /.vscode
 Parameters.html
