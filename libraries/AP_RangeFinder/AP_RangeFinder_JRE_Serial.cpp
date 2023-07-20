@@ -22,6 +22,8 @@
 #define FRAME_HEADER_1   0x52  // 'R'
 #define FRAME_HEADER_2   0x41  // 'A'
 
+#define DIST_MAX_CM 50000
+
 #define CCITT_INITPARA   0xffff
 #define CCITT_POLYNOMIAL 0x8408
 #define CCITT_OUTPARA    0xffff
@@ -29,20 +31,20 @@
 /* CRC16CCITT */
 static uint16_t CalcCRC16CCITT(uint8_t *cbuffer, uint16_t csize)
 {
-	uint16_t crc = CCITT_INITPARA;
-	for (int i = 0; i < csize; i++) {
-		crc ^= *cbuffer++;
-		for (int j = 0; j < 8; j++) {
+    uint16_t crc = CCITT_INITPARA;
+    for (int i = 0; i < csize; i++) {
+        crc ^= *cbuffer++;
+        for (int j = 0; j < 8; j++) {
             if ((crc & 0x0001) != 0) {
                 crc >>= 1;
                 crc ^= CCITT_POLYNOMIAL;
             } else {
                 crc >>= 1;
             }
-		}
-	}
-	crc = crc ^ CCITT_OUTPARA;
-	return crc;
+        }
+    }
+    crc = crc ^ CCITT_OUTPARA;
+    return crc;
 }
 
 bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
@@ -56,6 +58,7 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
         return false;
     }
 
+    uint16_t count = 0;
     uint16_t reading_cm_temp;
     // max distance the sensor can reliably measure - read from parameters
     const int16_t distance_cm_max = max_distance_cm();
@@ -72,6 +75,9 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
                     data_buff[0] = FRAME_HEADER_1;
                     data_buff_idx = 1; // next data_buff
                     if (read_buff_idx >= num_read - 1) { // read end byte
+                        if (count > 0) {
+                            return true;
+                        }
                         return false;      // next packet to header second byte
                     } else {
                         if (read_buff[read_buff_idx + 1] == FRAME_HEADER_2) {
@@ -103,6 +109,7 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
                     // status check
                     if (data_buff[13] & 0x02) { // NTRK
                         no_signal = true;
+                        reading_cm = MIN(MAX(DIST_MAX_CM, distance_cm_max), UINT16_MAX);
                     } else { // UPDATE DATA
                         no_signal = false;
                         reading_cm_temp = data_buff[4] * 256 + data_buff[5];
@@ -111,10 +118,8 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
                         } else {
                             reading_cm = distance_cm_max;
                         }
-                        state.distance_cm  = reading_cm;
-                        state.last_reading_ms = AP_HAL::millis();
-                        update_status();
                     }
+                    count++;
                 }
                 data_buff_idx = 0; // data index clear
             } else {
@@ -123,6 +128,9 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
         }
     }
 
+    if (count > 0) {
+        return true;
+    }
     return false;
 }
 

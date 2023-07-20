@@ -7,6 +7,7 @@
 #define AP_RANGEFINDER_JRE_SERIAL_ENABLED 1
 #endif
 
+// If defined, MissionPlanner can be used to send commands over Mavlink.
 #define AP_RANGEFINDER_JRE_SERIAL_COMMAND_ENABLED
 #undef AP_RANGEFINDER_JRE_SERIAL_COMMAND_ENABLED
 
