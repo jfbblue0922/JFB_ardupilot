@@ -103,6 +103,8 @@ public:
         USD1_CAN = 33,
         Benewake_CAN = 34,
         TeraRanger_Serial = 35,
+
+        JRE_Serial = 38,
         SIM = 100,
     };
 
