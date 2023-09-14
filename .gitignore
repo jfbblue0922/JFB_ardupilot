@@ -16,7 +16,7 @@
 /Tools/autotest/rover-ch7_mission.txt
 /tmp/*
 # Exclude all bins but allow font bins and bootloaders
-*.bin
+### *.bin
 !*_bl.bin
 !font*.bin
 *.d
@@ -25,7 +25,7 @@
 *.elf
 *.exe
 *.generated.h
-*.hex
+### *.hex
 *.lst
 *.o
 *.obj
@@ -80,7 +80,7 @@ LASTLOG.TXT
 Make.dep
 Thumbs.db
 autotest.lck
-build
+### build
 cmake_install.cmake
 cscope.in.out
 cscope.out
@@ -102,7 +102,7 @@ test.ArduCopter/*
 GPATH
 GRTAGS
 GTAGS
-*.apj
+### *.apj
 .gdbinit
 /.vscode
 /.history
