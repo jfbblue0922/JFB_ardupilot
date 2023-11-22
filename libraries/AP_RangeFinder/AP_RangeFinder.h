@@ -90,7 +90,7 @@ public:
         USD1_CAN = 33,
         Benewake_CAN = 34,
 
-        JRE_Serial = 38,
+        JRE_Serial = 41,
         SITL = 100,
     };
 

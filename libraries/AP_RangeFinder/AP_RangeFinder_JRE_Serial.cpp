@@ -17,34 +17,29 @@
 
 #if AP_RANGEFINDER_JRE_SERIAL_ENABLED
 
-#include <GCS_MAVLink/GCS.h>
+#include <AP_Math/AP_Math.h>
 
-#define FRAME_HEADER_1   0x52  // 'R'
-#define FRAME_HEADER_2   0x41  // 'A'
+#define FRAME_HEADER_1    'R'    // 0x52
+#define FRAME_HEADER_2_A  'A'    // 0x41
+#define FRAME_HEADER_2_B  'B'    // 0x42
+#define FRAME_HEADER_2_C  'C'    // 0x43
 
-#define DIST_MAX_CM 50000
+#define DIST_MAX_CM 5000
+#define OUT_OF_RANGE_ADD_CM   100
 
-#define CCITT_INITPARA   0xffff
-#define CCITT_POLYNOMIAL 0x8408
-#define CCITT_OUTPARA    0xffff
-
-/* CRC16CCITT */
-static uint16_t CalcCRC16CCITT(uint8_t *cbuffer, uint16_t csize)
+void AP_RangeFinder_JRE_Serial::move_preamble_in_buffer(uint8_t search_start_pos)
 {
-    uint16_t crc = CCITT_INITPARA;
-    for (int i = 0; i < csize; i++) {
-        crc ^= *cbuffer++;
-        for (int j = 0; j < 8; j++) {
-            if ((crc & 0x0001) != 0) {
-                crc >>= 1;
-                crc ^= CCITT_POLYNOMIAL;
-            } else {
-                crc >>= 1;
-            }
+    uint8_t i;
+    for (i=search_start_pos; i<data_buff_ofs; i++) {
+        if (data_buff[i] == FRAME_HEADER_1) {
+            break;
         }
     }
-    crc = crc ^ CCITT_OUTPARA;
-    return crc;
+    if (i == 0) {
+        return;
+    }
+    memmove(data_buff, &data_buff[i], data_buff_ofs-i);
+    data_buff_ofs = data_buff_ofs - i;
 }
 
 bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
@@ -53,116 +48,99 @@ bool AP_RangeFinder_JRE_Serial::get_reading(uint16_t &reading_cm)
     if (uart == nullptr) {
         return false;  // not update
     }
-    uint32_t n = uart->available();
-    if (n == 0) {
-        return false;
-    }
 
-    uint16_t count = 0;
-    uint16_t reading_cm_temp;
-    // max distance the sensor can reliably measure - read from parameters
-    const int16_t distance_cm_max = max_distance_cm();
+    uint16_t valid_count = 0;   // number of valid readings
+    uint16_t invalid_count = 0; // number of invalid readings
+    float sum = 0;
+    float reading_m = 0;
 
-    // buffer read
-    const ssize_t num_read = uart->read(read_buff, ARRAY_SIZE(read_buff));
-    read_buff_idx = 0; // read_buff start data index
-    while (read_buff_idx < num_read) {
+    // read a maximum of 8192 bytes per call to this function:
+    uint16_t bytes_available = MIN(uart->available(), 8192U);
 
-        if (data_buff_idx == 0) { // header first byte check
-            // header data search
-            for (; read_buff_idx<num_read; read_buff_idx++) {
-                if (read_buff[read_buff_idx] == FRAME_HEADER_1) {
-                    data_buff[0] = FRAME_HEADER_1;
-                    data_buff_idx = 1; // next data_buff
-                    if (read_buff_idx >= num_read - 1) { // read end byte
-                        if (count > 0) {
-                            return true;
-                        }
-                        return false;      // next packet to header second byte
-                    } else {
-                        if (read_buff[read_buff_idx + 1] == FRAME_HEADER_2) {
-                            data_buff[1] = FRAME_HEADER_2;
-                            data_buff_idx = 2;    // next data_buff
-                            read_buff_idx += 2;   // next read_buff
-                            break;         // next data set
-                        } else {
-                            data_buff_idx = 0;    // data index clear
-                        }
-                    }
-                }
-            }
-
-        } else if (data_buff_idx == 1) { // header second byte check
-            if (read_buff[read_buff_idx] == FRAME_HEADER_2) {
-                data_buff[1] = FRAME_HEADER_2;
-                data_buff_idx = 2;    // next data_buff
-            } else {
-                data_buff_idx = 0;    // data index clear
-            }
-            read_buff_idx++;      // next read_buff
-
-        } else { // data set
-            if (data_buff_idx >= ARRAY_SIZE(data_buff)) {  // 1 data set complete
-                // crc check
-                uint16_t crc = CalcCRC16CCITT(data_buff, ARRAY_SIZE(data_buff) - 2);
-                if ((((crc>>8) & 0xff) == data_buff[15]) && ((crc & 0xff) == data_buff[14])) {
-                    // status check
-                    if (data_buff[13] & 0x02) { // NTRK
-                        no_signal = true;
-                        reading_cm = MIN(MAX(DIST_MAX_CM, distance_cm_max), UINT16_MAX);
-                    } else { // UPDATE DATA
-                        no_signal = false;
-                        reading_cm_temp = data_buff[4] * 256 + data_buff[5];
-                        if (reading_cm_temp < distance_cm_max) {
-                            reading_cm = reading_cm_temp;
-                        } else {
-                            reading_cm = distance_cm_max;
-                        }
-                    }
-                    count++;
-                }
-                data_buff_idx = 0; // data index clear
-            } else {
-                data_buff[data_buff_idx++] = read_buff[read_buff_idx++];
-            }
+    while (bytes_available > 0) {
+        // fill buffer
+        const auto num_bytes_to_read = MIN(bytes_available, ARRAY_SIZE(data_buff) - data_buff_ofs);
+        const auto num_bytes_read = uart->read(&data_buff[data_buff_ofs], num_bytes_to_read);
+        if (num_bytes_read == 0) {
+            break;
         }
+        if (bytes_available < num_bytes_read) {
+            // this is a bug in the uart call.
+            break;
+        }
+        bytes_available -= num_bytes_read;
+        data_buff_ofs += num_bytes_read;
+
+        // move header frame header in buffer
+        move_preamble_in_buffer(0);
+
+        // ensure we have a packet type:
+        if (data_buff_ofs < 2) {
+            continue;
+        }
+
+        // determine packet length for incoming packet:
+        uint8_t packet_length;
+        switch (data_buff[1]) {
+        case FRAME_HEADER_2_A:                   
+            packet_length = 16;
+            break;
+        case FRAME_HEADER_2_B:
+            packet_length = 32;
+            break;
+        case FRAME_HEADER_2_C:
+            packet_length = 48;
+            break;
+        default:
+            move_preamble_in_buffer(1);
+            continue;
+        }
+
+        // check there are enough bytes for message type
+        if (data_buff_ofs < packet_length) {
+            continue;
+        }
+
+        // check the checksum
+        const uint16_t crc = crc16_ccitt_r(data_buff, packet_length - 2, 0xffff, 0xffff);
+        if (crc != ((data_buff[packet_length-1] << 8) | data_buff[packet_length-2])) {
+            // CRC failure
+            move_preamble_in_buffer(1);
+            continue;
+        }
+
+        // check random bit to for magic value:
+        if (data_buff[packet_length-3] & 0x02) { // NTRK
+            invalid_count++;
+            // discard entire packet:
+            move_preamble_in_buffer(packet_length);
+            continue;
+        }
+
+        // good message, extract rangefinder reading:
+        reading_cm = data_buff[4] * 256 + data_buff[5];
+        reading_m = reading_cm * 0.01f;
+        sum += reading_m;
+        valid_count++;
+        move_preamble_in_buffer(packet_length);
     }
 
-    if (count > 0) {
+    // return average of all valid readings
+    if (valid_count > 0) {
+        no_signal = false;
+        reading_m = sum / valid_count;
+        reading_cm = reading_m * 100;
         return true;
     }
+
+    // all readings were invalid so return out-of-range-high value
+    if (invalid_count > 0) {
+        no_signal = true;
+        reading_cm = MIN(MAX(DIST_MAX_CM, max_distance_cm() + OUT_OF_RANGE_ADD_CM), UINT16_MAX);
+        reading_m = reading_cm * 0.01f;
+        return true;
+    }
+
     return false;
 }
-
-#ifdef AP_RANGEFINDER_JRE_SERIAL_COMMAND_ENABLED
-bool AP_RangeFinder_JRE_Serial::set_writeing(uint16_t cmd, float param1, float param2)
-{
-    if ((int8_t)param1 != 1) {
-        return false;
-    }
-
-    switch (cmd) {
-    case MAV_CMD_ZEROSET_SET_JRE30:
-        uart->write('z');
-        GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "MAV_CMD_ZEROSET_SET_JRE30 : ");
-        break;
-
-    case MAV_CMD_ZEROSET_CLR_JRE30:
-        uart->write('0');
-        GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "MAV_CMD_ZEROSET_CLR_JRE30 : ");
-        break;
-
-    case MAV_CMD_GAINSET_JRE30:
-        uart->write('O');
-        uart->write(param2);
-        GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "MAV_CMD_GAINSET_JRE30 : %d", (int8_t)param2);
-        break;
-
-    default:
-        break;
-    }
-
-    return true;
-}
-#endif
 #endif  // AP_RANGEFINDER_JRE_SERIAL_ENABLED

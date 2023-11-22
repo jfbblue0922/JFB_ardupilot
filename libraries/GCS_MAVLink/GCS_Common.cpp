@@ -3280,18 +3280,6 @@ MAV_RESULT GCS_MAVLINK::handle_fixed_mag_cal_yaw(const mavlink_command_long_t &p
                                      packet.param4);
 }
 
-/*
-  handle handle_jre30_mag
- */
-MAV_RESULT GCS_MAVLINK::handle_jre30_mag(const mavlink_command_long_t &packet)
-{
-    RangeFinder *rangefinder = AP::rangefinder();
-    if (rangefinder != nullptr) {
-        rangefinder->handle_command_long(packet.command, packet.param1, packet.param2);
-    }
-    return MAV_RESULT_ACCEPTED;
-}
-
 void GCS_MAVLINK::handle_distance_sensor(const mavlink_message_t &msg)
 {
     RangeFinder *rangefinder = AP::rangefinder();
@@ -4261,12 +4249,6 @@ MAV_RESULT GCS_MAVLINK::handle_command_long_packet(const mavlink_command_long_t 
         result = handle_fixed_mag_cal_yaw(packet);
         break;
         
-    case MAV_CMD_ZEROSET_SET_JRE30:
-    case MAV_CMD_ZEROSET_CLR_JRE30:
-    case MAV_CMD_GAINSET_JRE30:
-        result = handle_jre30_mag(packet);
-        break;
-
     default:
         result = MAV_RESULT_UNSUPPORTED;
         break;
