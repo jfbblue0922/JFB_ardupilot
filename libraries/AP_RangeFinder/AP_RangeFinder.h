@@ -104,7 +104,7 @@ public:
         Benewake_CAN = 34,
         TeraRanger_Serial = 35,
 
-        JRE_Serial = 38,
+        JRE_Serial = 41,
         SIM = 100,
     };
 
