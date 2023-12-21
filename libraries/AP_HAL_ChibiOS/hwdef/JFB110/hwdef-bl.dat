@@ -1,6 +1,5 @@
 # hw definition file for processing by chibios_hwdef.py
 # for the JFB110 hardware
-# define AP_CUSTOM_FIRMWARE_STRING "(JFB110 V1.1.0)"
 
 # board ID for firmware load
 APJ_BOARD_ID 1110
