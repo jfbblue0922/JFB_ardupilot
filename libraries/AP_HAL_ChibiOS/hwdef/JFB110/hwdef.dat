@@ -1,6 +1,5 @@
 # hw definition file for processing by chibios_hwdef.py
 # for the JFB110 hardware
-# define AP_CUSTOM_FIRMWARE_STRING "(JFB110 V1.1.0)"
 
 # board ID for firmware load
 APJ_BOARD_ID 1110
@@ -34,10 +33,6 @@ define CONFIG_HAL_BOARD HAL_BOARD_CHIBIOS
 #define AP_FEATURE_BOARD_DETECT 1
 #define CONFIG_HAL_BOARD_SUBTYPE HAL_BOARD_SUBTYPE_CHIBIOS_FMUV5
 #define HAL_CHIBIOS_ARCH_FMUV5 1
-
-# to be compatible with the px4 bootloader we need
-# to use a different RAM_MAPs
-env USE_ALT_RAM_MAP 1
 
 env OPTIMIZE -O2
 
@@ -296,12 +291,10 @@ NODMA I2C*
 define STM32_I2C_USE_DMA FALSE
 
 # builtin compass on JAE JFB110
+define HAL_COMPASS_DISABLE_IST8310_INTERNAL_PROBE
 define HAL_PROBE_EXTERNAL_I2C_COMPASSES
 COMPASS IST8310 I2C:ALL_INTERNAL:0x0E false ROTATION_YAW_270
 COMPASS IST8310 I2C:ALL_EXTERNAL:0x0E true  ROTATION_ROLL_180_YAW_90
-
-define HAL_COMPASS_DEFAULT HAL_COMPASS_NONE
-define HAL_COMPASS_AUTO_ROT_DEFAULT 2
 
 # armed indication
 PB10 nARMED OUTPUT HIGH  # TP8
@@ -348,6 +341,7 @@ DMA_PRIORITY SDMMC* UART* USART* ADC* SPI* TIM*
 
 # enable FAT filesystem support (needs a microSD defined via SDMMC)
 define HAL_OS_FATFS_IO 1
+# for building Copter-4.3.7
 define HAL_BOARD_LOG_DIRECTORY "/APM/LOGS"
 define HAL_BOARD_TERRAIN_DIRECTORY "/APM/TERRAIN"
 
@@ -355,9 +349,6 @@ define HAL_BOARD_TERRAIN_DIRECTORY "/APM/TERRAIN"
 # note that if firmware is build with --secure-bl then DFU is
 # disabled
 ENABLE_DFU_BOOT 1
-
-# enable and enforce OpenDroneID
-define AP_OPENDRONEID_ENABLED 0
 
 # External watchdog gpio
 PG5 EXT_WDOG OUTPUT SPEED_VERYLOW
