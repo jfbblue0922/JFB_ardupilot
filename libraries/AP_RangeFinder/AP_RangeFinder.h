@@ -89,6 +89,8 @@ public:
         MSP = 32,
         USD1_CAN = 33,
         Benewake_CAN = 34,
+
+        JRE_Serial = 41,
         SIM = 100,
     };
 

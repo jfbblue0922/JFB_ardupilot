@@ -49,6 +49,7 @@
 #include "AP_RangeFinder_MSP.h"
 #include "AP_RangeFinder_USD1_CAN.h"
 #include "AP_RangeFinder_Benewake_CAN.h"
+#include "AP_RangeFinder_JRE_Serial.h"
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_Logger/AP_Logger.h>
@@ -584,6 +585,11 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
         _add_backend(new AP_RangeFinder_Benewake_CAN(state[instance], params[instance]), instance);
         break;
 #endif
+    case Type::JRE_Serial:
+        if (AP_RangeFinder_JRE_Serial::detect(serial_instance)) {
+            _add_backend(new AP_RangeFinder_JRE_Serial(state[instance], params[instance]), instance, serial_instance++);
+        }
+        break;
     case Type::NONE:
     default:
         break;
