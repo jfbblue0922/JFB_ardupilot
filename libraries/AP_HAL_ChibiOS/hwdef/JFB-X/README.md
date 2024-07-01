@@ -1,18 +1,18 @@
-# JFB-110 Flight Controller
+# JFB-X Flight Controller
 
-The JFB-110 flight controller is sold by [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
+The JFB-X flight controller is sold by [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
 
 ## Features
 
  - STM32H755 microcontroller
- - Three IMUs: SCHA63T and IIM42652 x2
- - Two BAROs: MS5611 SPI barometer x2
- - builtin I2C IST8310 magnetometer
+ - Three IMUs: SCHA63T and two IMUs
+ - Three BAROs: MS5611 SPI barometer x3
+ - builtin Two I2C IST8310 magnetometer
  - microSD card slot
- - 5 UARTs plus USB, RCIN, SBUS_OUT
+ - 6 UARTs plus USB, RCIN, SBUS_OUT
  - 16 PWM outputs
  - Four I2C and two CAN ports
- - External Buzzer (Open/Drain and 33V Out)
+ - External Buzzer (Open/Drain and 27V Out)
  - external safety Switch
  - voltage monitoring for servo rail and Vcc
  - two dedicated power input ports for external power bricks
@@ -28,9 +28,10 @@ The JFB-110 flight controller is sold by [JAE](https://www.jae.com/Motion_Sensor
  - SERIAL6 -> UART8  (SBUS_OUT)
  - SERIAL7 -> USART3 (debug)
  - SERIAL8 -> USB    (SLCAN)
+ - SERIALx -> USART2 (Telem3)
 
 
-The Telem1 and Telem2 ports have RTS/CTS pins, the other UARTs do not
+The Telem1, Telem2 and Telem3 ports have RTS/CTS pins, the other UARTs do not
 have RTS/CTS.
 
 The USART3 connector is labelled debug, but is available as a general
@@ -45,17 +46,15 @@ the Spektrum satellite cable.
 
 ## PWM Output
 
-The JFB-110 supports up to 16 PWM outputs. 
+The JFB-X supports up to 16 PWM outputs. 
 These are directly attached to the STM32H755 and support all
 PWM protocols.
 
 The 16 PWM outputs are in 6 groups:
- - PWM 1 and 2 in group1 (TIM15)
- - PWM 3 and 4 in group2 (TIM3) 
- - PWM 5, 11 ,12 and 13 in group3 (TIM4)
- - PWM 6 ,9 and 10 in group4 (TIM1)
- - PWM 7 ,8 and 15 in group5 (TIM5)
- - PWM 14 and 16 in group6 (TIM12)
+ - PWM  1,  2,  3 and  4 in group1 (TIM1)
+ - PWM  5,  6,  7 and  8 in group2 (TIM3)
+ - PWM  9, 10, 11 and 12 in group3 (TIM4)
+ - PWM 13, 14, 15 and 16 in group4 (TIM8)
 
 Channels within the same group need to use the same output rate. If
 any channel in a group uses DShot then all channels in the group need
@@ -70,7 +69,7 @@ Recomended input voltage is 4.9 to 5.5 volt.
 
 ## Compass
 
-The JFB-110 has a builtin IST8310 compass. Due to potential
+The JFB-X has a builtin IST8310 compass. Due to potential
 interference the board is usually used with an external I2C compass as
 part of a GPS/Compass combination.
 
@@ -105,20 +104,31 @@ The numbering of the GPIOs for PIN variables in ArduPilot is:
 
 ## Analog inputs
 
-The JFB-110 has 9 analog inputs
- - ADC Pin16 -> Battery Voltage
- - ADC Pin18 -> Battery Current Sensor
- - ADC Pin9  -> Battery Voltage 2
- - ADC Pin6  -> Battery Current Sensor 2
- - ADC Pin5  -> ADC 5V Sense
- - ADC Pin11 -> ADC 3.3V Sense
- - ADC Pin10 -> RSSI voltage monitoring
- - ADC Pin13 -> ADC SPARE 1
- - ADC Pin12 -> ADC SPARE 2
- 
+The JFB-X has 9 analog inputs
+ - ADC  Pin0  -> not used
+ - ADC  Pin1  -> not used
+ - ADC1 Pin2  -> +3.3V Sensor
+ - ADC  Pin3  -> not used
+ - ADC3 Pin4  -> Battery Voltage 2
+ - ADC3 Pin5  -> HW_REV_SENS
+ - ADC1 Pin6  -> Battery Current Sensor 2
+ - ADC  Pin7  -> not used
+ - ADC3 Pin8  -> ADC SPARE 1 (6.6V) Battery Voltage
+ - ADC3 Pin9  -> HW_VER_SENS
+ - ADC1 Pin10 -> RSSI voltage monitoring
+ - ADC  Pin11 -> not used
+ - ADC  Pin12 -> not used
+ - ADC1 Pin13 -> ADC SPARE (3.3V)
+ - ADC3 Pin14 -> SERVORAIL sens
+ - ADC3 Pin15 -> 5V sens
+ - ADC1 Pin16 -> Battery Voltage 2
+ - ADC  Pin17 -> not used
+ - ADC1 Pin18 -> Battery Current Sensor
+ - ADC  Pin19 -> not used
+
 ## I2C Buses
 
-The JFB-110 has 4 I2C interfaces.
+The JFB-X has 4 I2C interfaces.
 I2C 3 is for internal only.
  - the internal I2C port  is bus 3 in ArduPilot (I2C3 in hardware)
  - the port labelled I2CA is bus 4 in ArduPilot (I2C4 in hardware)
@@ -127,11 +137,11 @@ I2C 3 is for internal only.
 
 ## CAN
 
-The JFB-110 has two independent CAN buses, with the following pinouts.
+The JFB-X has two independent CAN buses, with the following pinouts.
 
 ## Debug
 
-The JFB-110 supports SWD debugging on the debug port
+The JFB-X supports SWD debugging on the debug port
 
 ## Loading Firmware
 
