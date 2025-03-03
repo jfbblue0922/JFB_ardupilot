@@ -16,7 +16,7 @@
 #if AP_BARO_ICP201XX_ENABLED
 
 #include <AP_HAL/AP_HAL.h>
-#include <AP_HAL/I2CDevice.h>
+#include <AP_HAL/Device.h>
 #include <utility>
 
 #include <AP_Common/AP_Common.h>
@@ -75,14 +75,14 @@ extern const AP_HAL::HAL &hal;
 /*
   constructor
  */
-AP_Baro_ICP201XX::AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> _dev)
+AP_Baro_ICP201XX::AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> _dev)
     : AP_Baro_Backend(baro)
     , dev(std::move(_dev))
 {
 }
 
 AP_Baro_Backend *AP_Baro_ICP201XX::probe(AP_Baro &baro,
-                                         AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev)
+                                         AP_HAL::OwnPtr<AP_HAL::Device> dev)
 {
     if (!dev) {
         return nullptr;
@@ -109,9 +109,13 @@ bool AP_Baro_ICP201XX::init()
     read_reg(REG_DEVICE_ID, &id);
     read_reg(REG_VERSION, &ver);
 
+    printf("ICP201XX ID = 0x%02x 0x%02x \n", REG_DEVICE_ID, id);
+
     if (id != ICP201XX_ID) {
         goto failed;
     }
+
+    printf("ICP201XX VER = 0x%02x 0x%02x \n", REG_VERSION, ver);
 
     if (ver != 0x00 && ver != 0xB2) {
         goto failed;
@@ -158,25 +162,44 @@ void AP_Baro_ICP201XX::dummy_reg()
     } while (0);
 }
 
-bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len)
+bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len, bool spi)
 {
     bool ret;
-    ret = dev->transfer(&reg, 1, buf, len);
-    dummy_reg();
+
+    if (spi)
+    {
+        uint8_t data[2] = { 0x3C, reg };
+        ret = dev->transfer(data, sizeof(data), buf, len);
+    }
+    else
+    {
+        ret = dev->transfer(&reg, 1, buf, len);
+        dummy_reg();
+    }
+
     return ret;
 }
 
-bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *val)
+bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *val, bool spi)
 {
-    return read_reg(reg, val, 1);
+    return read_reg(reg, val, 1, spi);
 }
 
-bool AP_Baro_ICP201XX::write_reg(uint8_t reg, uint8_t val)
+bool AP_Baro_ICP201XX::write_reg(uint8_t reg, uint8_t val, bool spi)
 {
     bool ret;
-    uint8_t data[2] = { reg, val };
-    ret = dev->transfer(data, sizeof(data), nullptr, 0);
-    dummy_reg();
+
+    if (spi)
+    {
+        uint8_t data[3] = { 0x33, reg, val };
+        ret = dev->transfer(data, sizeof(data), nullptr, 0);
+    }
+    else
+    {
+        uint8_t data[2] = { reg, val };
+        ret = dev->transfer(data, sizeof(data), nullptr, 0);
+        dummy_reg();
+    }
     return ret;
 }
 
@@ -200,7 +223,7 @@ bool AP_Baro_ICP201XX::mode_select(uint8_t mode)
     uint8_t mode_sync_status = 0;
 
     do {
-        read_reg(REG_DEVICE_STATUS, &mode_sync_status, 1);
+        read_reg(REG_DEVICE_STATUS, &mode_sync_status, (uint8_t)1);
 
         if (mode_sync_status & 0x01) {
             break;
@@ -259,7 +282,7 @@ bool AP_Baro_ICP201XX::get_sensor_data(float *pressure, float *temperature)
             flush_fifo();
             return false;
         }
-        if (fifo_packets > 0 && fifo_packets <= 16 && read_reg(REG_FIFO_BASE, fifo_data, fifo_packets * 2 * 3)) {
+        if (fifo_packets > 0 && fifo_packets <= 16 && read_reg(REG_FIFO_BASE, fifo_data, (uint8_t)(fifo_packets * 2 * 3))) {
             uint8_t offset = 0;
 
             for (uint8_t i = 0; i < fifo_packets; i++) {

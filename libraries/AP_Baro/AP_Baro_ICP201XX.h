@@ -13,16 +13,16 @@ class AP_Baro_ICP201XX : public AP_Baro_Backend
 public:
     void update() override;
 
-    static AP_Baro_Backend *probe(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev);
+    static AP_Baro_Backend *probe(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> dev);
 
 private:
-    AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev);
+    AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> dev);
 
     bool init();
     void dummy_reg();
-    bool read_reg(uint8_t reg, uint8_t *buf, uint8_t len);
-    bool read_reg(uint8_t reg, uint8_t *val);
-    bool write_reg(uint8_t reg, uint8_t val);
+    bool read_reg(uint8_t reg, uint8_t *buf, uint8_t len, bool spi = false);
+    bool read_reg(uint8_t reg, uint8_t *val, bool spi = false);
+    bool write_reg(uint8_t reg, uint8_t val, bool spi = false);
     bool mode_select(uint8_t mode);
     bool read_otp_data(uint8_t addr, uint8_t cmd, uint8_t *val);
     bool get_sensor_data(float *pressure, float *temperature);
@@ -35,7 +35,7 @@ private:
 
     uint8_t instance;
 
-    AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev;
+    AP_HAL::OwnPtr<AP_HAL::Device> dev;
 
     // accumulation structure, protected by _sem
     struct {
