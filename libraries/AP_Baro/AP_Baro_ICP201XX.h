@@ -20,9 +20,9 @@ private:
 
     bool init();
     void dummy_reg();
-    bool read_reg(uint8_t reg, uint8_t *buf, uint8_t len, bool spi = false);
-    bool read_reg(uint8_t reg, uint8_t *val, bool spi = false);
-    bool write_reg(uint8_t reg, uint8_t val, bool spi = false);
+    bool read_reg(uint8_t reg, uint8_t *buf, uint8_t len);
+    bool read_reg(uint8_t reg, uint8_t *val);
+    bool write_reg(uint8_t reg, uint8_t val);
     bool mode_select(uint8_t mode);
     bool read_otp_data(uint8_t addr, uint8_t cmd, uint8_t *val);
     bool get_sensor_data(float *pressure, float *temperature);
@@ -36,6 +36,8 @@ private:
     uint8_t instance;
 
     AP_HAL::OwnPtr<AP_HAL::Device> dev;
+
+    bool spi;
 
     // accumulation structure, protected by _sem
     struct {

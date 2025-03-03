@@ -79,6 +79,11 @@ AP_Baro_ICP201XX::AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device>
     : AP_Baro_Backend(baro)
     , dev(std::move(_dev))
 {
+    if (dev->bus_type() == AP_HAL::Device::BUS_TYPE_SPI) {
+        spi = true;
+    } else {
+        spi = false;
+    }
 }
 
 AP_Baro_Backend *AP_Baro_ICP201XX::probe(AP_Baro &baro,
@@ -162,17 +167,14 @@ void AP_Baro_ICP201XX::dummy_reg()
     } while (0);
 }
 
-bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len, bool spi)
+bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len)
 {
     bool ret;
 
-    if (spi)
-    {
+    if (spi) {
         uint8_t data[2] = { 0x3C, reg };
         ret = dev->transfer(data, sizeof(data), buf, len);
-    }
-    else
-    {
+    } else {
         ret = dev->transfer(&reg, 1, buf, len);
         dummy_reg();
     }
@@ -180,22 +182,19 @@ bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len, bool spi
     return ret;
 }
 
-bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *val, bool spi)
+bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *val)
 {
-    return read_reg(reg, val, 1, spi);
+    return read_reg(reg, val, 1);
 }
 
-bool AP_Baro_ICP201XX::write_reg(uint8_t reg, uint8_t val, bool spi)
+bool AP_Baro_ICP201XX::write_reg(uint8_t reg, uint8_t val)
 {
     bool ret;
 
-    if (spi)
-    {
+    if (spi) {
         uint8_t data[3] = { 0x33, reg, val };
         ret = dev->transfer(data, sizeof(data), nullptr, 0);
-    }
-    else
-    {
+    } else {
         uint8_t data[2] = { reg, val };
         ret = dev->transfer(data, sizeof(data), nullptr, 0);
         dummy_reg();
@@ -223,7 +222,7 @@ bool AP_Baro_ICP201XX::mode_select(uint8_t mode)
     uint8_t mode_sync_status = 0;
 
     do {
-        read_reg(REG_DEVICE_STATUS, &mode_sync_status, (uint8_t)1);
+        read_reg(REG_DEVICE_STATUS, &mode_sync_status, 1);
 
         if (mode_sync_status & 0x01) {
             break;
@@ -282,7 +281,7 @@ bool AP_Baro_ICP201XX::get_sensor_data(float *pressure, float *temperature)
             flush_fifo();
             return false;
         }
-        if (fifo_packets > 0 && fifo_packets <= 16 && read_reg(REG_FIFO_BASE, fifo_data, (uint8_t)(fifo_packets * 2 * 3))) {
+        if (fifo_packets > 0 && fifo_packets <= 16 && read_reg(REG_FIFO_BASE, fifo_data, fifo_packets * 2 * 3)) {
             uint8_t offset = 0;
 
             for (uint8_t i = 0; i < fifo_packets; i++) {
