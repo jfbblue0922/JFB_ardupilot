@@ -40,9 +40,7 @@
 #include <AP_InternalError/AP_InternalError.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>
 #include <AP_Common/ExpandingString.h>
-#ifndef HAL_NO_UARTDRIVER
 #include <GCS_MAVLink/GCS.h>
-#endif
 
 #if AP_SIM_ENABLED
 #include <AP_HAL/SIMState.h>
@@ -553,19 +551,19 @@ void RCOutput::set_dshot_rate(uint8_t dshot_rate, uint16_t loop_rate_hz)
     }
 
     uint16_t drate = dshot_rate * loop_rate_hz;
-    _dshot_rate = dshot_rate;
     // BLHeli32 uses a 16 bit counter for input calibration which at 48Mhz will wrap
     // at 732Hz so never allow rates below 800hz
     while (drate < 800) {
-        _dshot_rate++;
-        drate = _dshot_rate * loop_rate_hz;
+        dshot_rate++;
+        drate = dshot_rate * loop_rate_hz;
     }
-    // prevent stupidly high rates, ideally should also prevent high rates
+    // prevent stupidly high rate multiples, ideally should also prevent high rates
     // with slower dshot variants
-    if (drate > 4000) {
-        _dshot_rate = 4000 / loop_rate_hz;
-        drate = _dshot_rate * loop_rate_hz;
+    while (dshot_rate > 1 && drate > MAX(4096, loop_rate_hz)) {
+        dshot_rate--;
+        drate = dshot_rate * loop_rate_hz;
     }
+    _dshot_rate = dshot_rate;
     _dshot_period_us = 1000000UL / drate;
 #if HAL_WITH_IO_MCU
     if (iomcu_dshot) {
@@ -650,6 +648,11 @@ uint32_t RCOutput::get_disabled_channels(uint32_t digital_mask)
     }
 
     disabled_chan_mask <<= chan_offset;
+#if HAL_WITH_IO_MCU
+    if (iomcu_dshot) {
+       disabled_chan_mask |= iomcu.get_disabled_channels(digital_mask);
+    }
+#endif
     return disabled_chan_mask;
 }
 
@@ -808,11 +811,9 @@ void RCOutput::push_local(void)
 #endif // HAL_DSHOT_ENABLED
                 if (group.current_mode == MODE_PWM_ONESHOT ||
                     group.current_mode == MODE_PWM_ONESHOT125 ||
-                    group.current_mode == MODE_NEOPIXEL ||
-                    group.current_mode == MODE_NEOPIXELRGB ||
-                    group.current_mode == MODE_PROFILED ||
                     is_dshot_protocol(group.current_mode)) {
                     // only control widest pulse for oneshot and dshot
+                    // do not control for neopixel since updates to these are not pushed
                     if (period_us > widest_pulse) {
                         widest_pulse = period_us;
                     }
@@ -900,7 +901,7 @@ bool RCOutput::mode_requires_dma(enum output_mode mode) const
 
 void RCOutput::print_group_setup_error(pwm_group &group, const char* error_string)
 {
-#ifndef HAL_NO_UARTDRIVER
+#if AP_HAVE_GCS_SEND_TEXT
     uint8_t min_chan = UINT8_MAX;
     uint8_t max_chan = 0;
     for (uint8_t j = 0; j < 4; j++) {
@@ -918,7 +919,7 @@ void RCOutput::print_group_setup_error(pwm_group &group, const char* error_strin
     } else {
         GCS_SEND_TEXT(MAV_SEVERITY_ERROR, "Chan %i to %i, %s: %s",min_chan+1,max_chan+1,get_output_mode_string(group.current_mode),error_string);
     }
-#endif
+#endif  // AP_HAVE_GCS_SEND_TEXT
 }
 
 /*
@@ -1133,6 +1134,7 @@ void RCOutput::set_group_mode(pwm_group &group)
         if (is_bidir_dshot_enabled(group)) {
             group.dshot_pulse_send_time_us = pulse_send_time_us;
             // to all intents and purposes the pulse time of send and receive are the same
+            // for dshot600 this is roughly 26us + 30us + 26us = 82us
             group.dshot_pulse_time_us = pulse_send_time_us + pulse_send_time_us + 30;
         }
 #endif
@@ -1263,9 +1265,13 @@ bool RCOutput::get_output_mode_banner(char banner_msg[], uint8_t banner_msg_len)
     if (iomcu_enabled) {
         uint8_t iomcu_mask;
         const output_mode iomcu_mode = iomcu.get_output_mode(iomcu_mask);
+        const uint8_t gpio_mask = iomcu.get_GPIO_mask();
         for (uint8_t i = 0; i < chan_offset; i++ ) {
-            if (iomcu_mask & 1U<<i) {
+            const uint8_t chan_bit = 1U<<i;
+            if (iomcu_mask & chan_bit) {
                 ch_mode[i] = iomcu_mode;
+            } else if (gpio_mask & chan_bit) {
+                ch_mode[i] = MODE_PWM_NONE;
             } else {
                 ch_mode[i] = MODE_PWM_NORMAL;
             }
@@ -1334,6 +1340,9 @@ void RCOutput::cork(void)
  */
 void RCOutput::push(void)
 {
+    if (!corked) {
+        INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
+    }
     corked = false;
     push_local();
 #if HAL_WITH_IO_MCU
@@ -1390,7 +1399,11 @@ void RCOutput::trigger_groups()
     osalSysUnlock();
 #if !defined(HAL_NO_RCOUT_THREAD) || HAL_DSHOT_ENABLED
     // trigger a PWM send
-    if (!in_soft_serial() && hal.scheduler->in_main_thread() && rcout_thread_ctx) {
+    if (!in_soft_serial() &&
+        // we always trigger an output if we are in the main thread
+        // we also always trigger an output if we are in the rate thread and thus
+        // force_trigger has been set
+        (hal.scheduler->in_main_thread() || force_trigger) && rcout_thread_ctx) {
         chEvtSignal(rcout_thread_ctx, EVT_PWM_SEND);
     }
 #endif
@@ -1460,9 +1473,9 @@ void RCOutput::dshot_send_groups(rcout_timer_t cycle_start_us, rcout_timer_t tim
     }
 
     for (auto &group : pwm_group_list) {
-        bool pulse_sent;
+        bool pulse_sent = false;
         // send a dshot command
-        if (is_dshot_protocol(group.current_mode)
+        if (group.can_send_dshot_pulse()
             && dshot_command_is_active(group)) {
             command_sent = dshot_send_command(group, _dshot_current_command.command, _dshot_current_command.chan);
             pulse_sent = true;
@@ -1634,9 +1647,8 @@ void RCOutput::dshot_send(pwm_group &group, rcout_timer_t cycle_start_us, rcout_
     bdshot_prepare_for_next_pulse(group);
 #endif
     bool safety_on = hal.util->safety_switch_state() == AP_HAL::Util::SAFETY_DISARMED;
-#if !defined(IOMCU_FW)
     bool armed = hal.util->get_soft_armed();
-#endif
+
     memset((uint8_t *)group.dma_buffer, 0, DSHOT_BUFFER_LENGTH);
 
     for (uint8_t i=0; i<4; i++) {
@@ -1647,7 +1659,9 @@ void RCOutput::dshot_send(pwm_group &group, rcout_timer_t cycle_start_us, rcout_
                 bdshot_decode_telemetry_from_erpm(group.bdshot.erpm[i], chan);
             }
 #endif
-            if (safety_on && !(safety_mask & (1U<<(chan+chan_offset)))) {
+            const uint32_t servo_chan_mask = 1U<<(chan+chan_offset);
+
+            if (safety_on && !(safety_mask & servo_chan_mask)) {
                 // safety is on, don't output anything
                 continue;
             }
@@ -1659,12 +1673,10 @@ void RCOutput::dshot_send(pwm_group &group, rcout_timer_t cycle_start_us, rcout_
                 continue;
             }
 
-            const uint32_t chan_mask = (1U<<chan);
-
             pwm = constrain_int16(pwm, 1000, 2000);
             uint16_t value = MIN(2 * (pwm - 1000), 1999);
 
-            if ((chan_mask & _reversible_mask) != 0) {
+            if ((servo_chan_mask & _reversible_mask) != 0) {
                 // this is a DShot-3D output, map so that 1500 PWM is zero throttle reversed
                 if (value < 1000) {
                     value = 1999 - value;
@@ -1680,13 +1692,14 @@ void RCOutput::dshot_send(pwm_group &group, rcout_timer_t cycle_start_us, rcout_
             if (value != 0) {
                 value += DSHOT_ZERO_THROTTLE;
             }
-#if !defined(IOMCU_FW)
+
             if (!armed) {
                 // when disarmed we always send a zero value
                 value = 0;
             }
-#endif
+
             // according to sskaug requesting telemetry while trying to arm may interfere with the good frame calc
+            const uint32_t chan_mask = (1U<<chan);
             bool request_telemetry = telem_request_mask & chan_mask;
             uint16_t packet = create_dshot_packet(value, request_telemetry,
 #ifdef HAL_WITH_BIDIR_DSHOT
@@ -1775,6 +1788,7 @@ void RCOutput::send_pulses_DMAR(pwm_group &group, uint32_t buffer_length)
 #ifdef HAL_GPIO_LINE_GPIO54
     TOGGLE_PIN_DEBUG(54);
 #endif
+
 #if STM32_DMA_SUPPORTS_DMAMUX
     dmaSetRequestSource(group.dma, group.dma_up_channel);
 #endif
@@ -1901,6 +1915,11 @@ void RCOutput::dma_cancel(pwm_group& group)
 
   While serial output is active normal output to the channel group is
   suspended.
+
+  chanmask could refer to more than one group so it is assumed that
+  this function is always called before outputting to the group
+  implied by chan, but that DMA channels are setup only once
+  until serial_end() has been called
 */
 #if HAL_SERIAL_ESC_COMM_ENABLED
 bool RCOutput::serial_setup_output(uint8_t chan, uint32_t baudrate, uint32_t chanmask)
@@ -1910,7 +1929,7 @@ bool RCOutput::serial_setup_output(uint8_t chan, uint32_t baudrate, uint32_t cha
     chanmask >>= chan_offset;
     pwm_group *new_serial_group = nullptr;
 
-    // find the channel group
+    // find the channel group for the next output
     for (auto &group : pwm_group_list) {
         if (group.current_mode == MODE_PWM_BRUSHED) {
             // can't do serial output with brushed motors
@@ -1927,6 +1946,7 @@ bool RCOutput::serial_setup_output(uint8_t chan, uint32_t baudrate, uint32_t cha
         }
     }
 
+    // couldn't find a group, shutdown everything
     if (!new_serial_group) {
         if (in_soft_serial()) {
             // shutdown old group
@@ -1938,22 +1958,23 @@ bool RCOutput::serial_setup_output(uint8_t chan, uint32_t baudrate, uint32_t cha
     // stop further dshot output before we reconfigure the DMA
     serial_group = new_serial_group;
 
-    // setup the groups for serial output. We ask for a bit width of 1, which gets modified by the
+    // setup the unconfigured groups for serial output. We ask for a bit width of 1, which gets modified by the
     // we setup all groups so they all are setup with the right polarity, and to make switching between
     // channels in blheli pass-thru fast
     for (auto &group : pwm_group_list) {
-        if (group.ch_mask & chanmask) {
+        if ((group.ch_mask & chanmask) && !(group.ch_mask & serial_chanmask)) {
             if (!setup_group_DMA(group, baudrate, 10, false, DSHOT_BUFFER_LENGTH, 10, false)) {
                 serial_end();
                 return false;
             }
         }
     }
-
     // run the thread doing serial IO at highest priority. This is needed to ensure we don't
     // lose bytes when we switch between output and input
     serial_thread = chThdGetSelfX();
     serial_priority  = chThdGetSelfX()->realprio;
+    // mask of channels currently configured
+    serial_chanmask |= chanmask;
     chThdSetPriority(HIGHPRIO);
 
     // remember the bit period for serial_read_byte()
@@ -1988,7 +2009,6 @@ void RCOutput::fill_DMA_buffer_byte(dmar_uint_t *buffer, uint8_t stride, uint8_t
         b >>= 1;
     }
 }
-
 
 /*
   send one serial byte, blocking call, should be called with the DMA lock held
@@ -2216,11 +2236,15 @@ void RCOutput::serial_end(void)
         irq.waiter = nullptr;
         for (uint8_t i = 0; i < NUM_GROUPS; i++ ) {
             pwm_group &group = pwm_group_list[i];
-            set_group_mode(group);
-            set_freq_group(group);
+            // re-configure groups that were previous configured
+            if (group.ch_mask & serial_chanmask) {
+                dma_cancel(group);  // this ensures the DMA is in a sane state
+                set_group_mode(group);
+            }
         }
     }
     serial_group = nullptr;
+    serial_chanmask = 0;
 }
 #endif // HAL_SERIAL_ESC_COMM_ENABLED
 
@@ -2292,7 +2316,7 @@ void RCOutput::safety_update(void)
     bool safety_pressed = palReadLine(HAL_GPIO_PIN_SAFETY_IN);
     if (safety_pressed) {
         AP_BoardConfig *brdconfig = AP_BoardConfig::get_singleton();
-        if (safety_press_count < 255) {
+        if (safety_press_count < UINT8_MAX) {
             safety_press_count++;
         }
         if (brdconfig && brdconfig->safety_button_handle_pressed(safety_press_count)) {

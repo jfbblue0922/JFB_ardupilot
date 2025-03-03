@@ -33,7 +33,9 @@ public:
     Vector2f get_pilot_desired_acceleration() const { return Vector2f{_desired_accel.x, _desired_accel.y}; }
 
     /// clear pilot desired acceleration
-    void clear_pilot_desired_acceleration() { _desired_accel.zero(); }
+    void clear_pilot_desired_acceleration() {
+        set_pilot_desired_acceleration(0, 0);
+    }
 
     /// get vector to stopping point based on a horizontal position and velocity
     void get_stopping_point_xy(Vector2f& stopping_point) const;
@@ -49,6 +51,9 @@ public:
 
     /// run the loiter controller
     void update(bool avoidance_on = true);
+
+    //set maximum horizontal speed
+    void set_max_xy_speed(float max_xy_speed);
 
     /// get desired roll, pitch which should be fed into stabilize controllers
     float get_roll() const { return _pos_control.get_roll_cd(); }

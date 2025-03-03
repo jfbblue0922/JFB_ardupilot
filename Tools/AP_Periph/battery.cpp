@@ -1,6 +1,6 @@
 #include "AP_Periph.h"
 
-#ifdef HAL_PERIPH_ENABLE_BATTERY
+#if AP_PERIPH_BATTERY_ENABLED
 
 /*
   battery support
@@ -67,7 +67,7 @@ void AP_Periph_FW::can_battery_update(void)
         pkt.model_name.len = strnlen((char*)pkt.model_name.data, sizeof(pkt.model_name.data));
 #endif //defined(HAL_PERIPH_BATTERY_SKIP_NAME)
 
-        uint8_t buffer[UAVCAN_EQUIPMENT_POWER_BATTERYINFO_MAX_SIZE] {};
+        uint8_t buffer[UAVCAN_EQUIPMENT_POWER_BATTERYINFO_MAX_SIZE];
         const uint16_t total_size = uavcan_equipment_power_BatteryInfo_encode(&pkt, buffer, !periph.canfdout());
 
         canard_broadcast(UAVCAN_EQUIPMENT_POWER_BATTERYINFO_SIGNATURE,
@@ -124,5 +124,4 @@ void AP_Periph_FW::can_battery_send_cells(uint8_t instance)
     delete [] buffer;
 }
 
-#endif // HAL_PERIPH_ENABLE_BATTERY
-
+#endif // AP_PERIPH_BATTERY_ENABLED

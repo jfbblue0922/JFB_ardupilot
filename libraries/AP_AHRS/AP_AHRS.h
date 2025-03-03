@@ -131,6 +131,12 @@ public:
 #endif
     }
 
+#if AP_AHRS_EXTERNAL_WIND_ESTIMATE_ENABLED
+    void set_external_wind_estimate(float speed, float direction) {
+        dcm.set_external_wind_estimate(speed, direction);
+    }
+#endif
+
     // return the parameter AHRS_WIND_MAX in metres per second
     uint8_t get_max_wind() const {
         return _wind_max;
@@ -146,7 +152,7 @@ public:
     // get air density / sea level density - decreases as altitude climbs
     float get_air_density_ratio(void) const;
     
-    // return an airspeed estimate if available. return true
+    // return an (equivalent) airspeed estimate if available. return true
     // if we have an estimate
     bool airspeed_estimate(float &airspeed_ret) const;
 
@@ -189,7 +195,7 @@ public:
         return AP_AHRS_Backend::airspeed_sensor_enabled(airspeed_index);
     }
 
-    // return a synthetic airspeed estimate (one derived from sensors
+    // return a synthetic (equivalent) airspeed estimate (one derived from sensors
     // other than an actual airspeed sensor), if available. return
     // true if we have a synthetic airspeed.  ret will not be modified
     // on failure.
@@ -411,7 +417,7 @@ public:
     void request_yaw_reset(void);
 
     // set position, velocity and yaw sources to either 0=primary, 1=secondary, 2=tertiary
-    void set_posvelyaw_source_set(uint8_t source_set_idx);
+    void set_posvelyaw_source_set(AP_NavEKF_Source::SourceSetSelection source_set_idx);
 
     //returns index of active source set used, 0=primary, 1=secondary, 2=tertiary
     uint8_t get_posvelyaw_source_set() const;
@@ -612,9 +618,9 @@ public:
     // return current vibration vector for primary IMU
     Vector3f get_vibration(void) const;
 
-    // return primary accels, for lua
+    // return primary accels
     const Vector3f &get_accel(void) const {
-        return AP::ins().get_accel();
+        return AP::ins().get_accel(_get_primary_accel_index());
     }
 
     // return primary accel bias. This should be subtracted from
@@ -761,9 +767,6 @@ private:
     void update_EKF3(void);
 #endif
 
-    // rotation from vehicle body to NED frame
-
-
     const uint16_t startup_delay_ms = 1000;
     uint32_t start_time_ms;
     uint8_t _ekf_flags; // bitmask from Flags enumeration
@@ -867,7 +870,7 @@ private:
 
     // return an airspeed estimate if available. return true
     // if we have an estimate
-    bool _airspeed_estimate(float &airspeed_ret, AirspeedEstimateType &status) const;
+    bool _airspeed_EAS(float &airspeed_ret, AirspeedEstimateType &status) const;
 
     // return secondary attitude solution if available, as eulers in radians
     bool _get_secondary_attitude(Vector3f &eulers) const;
@@ -886,11 +889,11 @@ private:
 
     // return a true airspeed estimate (navigation airspeed) if
     // available. return true if we have an estimate
-    bool _airspeed_estimate_true(float &airspeed_ret) const;
+    bool _airspeed_TAS(float &airspeed_ret) const;
 
     // return estimate of true airspeed vector in body frame in m/s
     // returns false if estimate is unavailable
-    bool _airspeed_vector_true(Vector3f &vec) const;
+    bool _airspeed_TAS(Vector3f &vec) const;
 
     // return the quaternion defining the rotation from NED to XYZ (body) axes
     bool _get_quaternion(Quaternion &quat) const WARN_IF_UNUSED;
@@ -1012,12 +1015,16 @@ private:
     enum class Options : uint16_t {
         DISABLE_DCM_FALLBACK_FW=(1U<<0),
         DISABLE_DCM_FALLBACK_VTOL=(1U<<1),
+        DISABLE_AIRSPEED_EKF_CHECK=(1U<<2),
     };
     AP_Int16 _options;
     
     bool option_set(Options option) const {
         return (_options & uint16_t(option)) != 0;
     }
+
+    // true when we have completed the common origin setup
+    bool done_common_origin;
 };
 
 namespace AP {

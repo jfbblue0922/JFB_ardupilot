@@ -40,6 +40,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <sys/time.h>
 #endif
 
 #include <errno.h>
@@ -99,7 +100,7 @@ void SOCKET_CLASS_NAME::make_sockaddr(const char *address, uint16_t port, struct
     sockaddr.sin_addr.s_addr = htonl(inet_str_to_addr(address));
 }
 
-#if !defined(HAL_BOOTLOADER_BUILD)
+#if !defined(HAL_BOOTLOADER_BUILD) || AP_NETWORKING_CAN_MCAST_ENABLED
 /*
   connect the socket
  */
@@ -166,7 +167,9 @@ bool SOCKET_CLASS_NAME::connect(const char *address, uint16_t port)
         // for bi-directional UDP broadcast we need 2 sockets
         struct sockaddr_in send_addr;
         socklen_t send_len = sizeof(send_addr);
-        ret = CALL_PREFIX(getsockname)(fd, (struct sockaddr *)&send_addr, &send_len);
+        if (CALL_PREFIX(getsockname)(fd, (struct sockaddr *)&send_addr, &send_len) == -1) {
+            return false;
+        }
         fd_in = CALL_PREFIX(socket)(AF_INET, SOCK_DGRAM, 0);
         if (fd_in == -1) {
             goto fail_multi;
@@ -186,7 +189,7 @@ fail_multi:
     fd_in = -1;
     return false;
 }
-#endif // HAL_BOOTLOADER_BUILD
+#endif // !defined(HAL_BOOTLOADER_BUILD) || AP_NETWORKING_CAN_MCAST_ENABLED
 
 /*
   connect the socket with a timeout

@@ -65,7 +65,11 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, ModeReason reaso
         break;
 #endif // HAL_QUADPLANE_ENABLED
 
-    case Mode::Number::AUTO: {
+    case Mode::Number::AUTO:
+#if MODE_AUTOLAND_ENABLED
+    case Mode::Number::AUTOLAND:
+#endif
+        {
         if (failsafe_in_landing_sequence()) {
             // don't failsafe in a landing sequence
             break;
@@ -138,13 +142,19 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
             break;
         }
         if(g.fs_action_long == FS_ACTION_LONG_PARACHUTE) {
-#if PARACHUTE == ENABLED
+#if HAL_PARACHUTE_ENABLED
             parachute_release();
 #endif
         } else if (g.fs_action_long == FS_ACTION_LONG_GLIDE) {
             set_mode(mode_fbwa, reason);
         } else if (g.fs_action_long == FS_ACTION_LONG_AUTO) {
             set_mode(mode_auto, reason);
+#if MODE_AUTOLAND_ENABLED
+        } else if (g.fs_action_long == FS_ACTION_LONG_AUTOLAND) {
+            if (!set_mode(mode_autoland, reason)) {
+               set_mode(mode_rtl, reason);
+            }
+#endif
         } else {
             set_mode(mode_rtl, reason);
         }
@@ -187,21 +197,30 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
     case Mode::Number::GUIDED:
 
         if(g.fs_action_long == FS_ACTION_LONG_PARACHUTE) {
-#if PARACHUTE == ENABLED
+#if HAL_PARACHUTE_ENABLED
             parachute_release();
 #endif
         } else if (g.fs_action_long == FS_ACTION_LONG_GLIDE) {
             set_mode(mode_fbwa, reason);
         } else if (g.fs_action_long == FS_ACTION_LONG_AUTO) {
             set_mode(mode_auto, reason);
+#if MODE_AUTOLAND_ENABLED
+        } else if (g.fs_action_long == FS_ACTION_LONG_AUTOLAND) {
+            if (!set_mode(mode_autoland, reason)) {
+               set_mode(mode_rtl, reason);
+            } 
+#endif           
         } else if (g.fs_action_long == FS_ACTION_LONG_RTL) {
             set_mode(mode_rtl, reason);
         }
         break;
-
     case Mode::Number::RTL:
         if (g.fs_action_long == FS_ACTION_LONG_AUTO) {
             set_mode(mode_auto, reason);
+#if MODE_AUTOLAND_ENABLED
+        } else if (g.fs_action_long == FS_ACTION_LONG_AUTOLAND) {
+            set_mode(mode_autoland, reason);
+#endif
         }
         break;
 #if HAL_QUADPLANE_ENABLED
@@ -210,6 +229,9 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
     case Mode::Number::LOITER_ALT_QLAND:
 #endif
     case Mode::Number::INITIALISING:
+#if MODE_AUTOLAND_ENABLED
+    case Mode::Number::AUTOLAND:
+#endif
         break;
     }
     gcs().send_text(MAV_SEVERITY_WARNING, "%s Failsafe On: %s", (reason == ModeReason:: GCS_FAILSAFE) ? "GCS" : "RC Long", control_mode->name());
@@ -279,11 +301,17 @@ void Plane::handle_battery_failsafe(const char *type_str, const int8_t action)
             }
             FALLTHROUGH;
         }
-        case Failsafe_Action_RTL: {
+        case Failsafe_Action_RTL:
+        case Failsafe_Action_AUTOLAND_OR_RTL: {
             bool already_landing = flight_stage == AP_FixedWing::FlightStage::LAND;
 #if HAL_QUADPLANE_ENABLED
             if (control_mode == &mode_qland || control_mode == &mode_loiter_qland ||
                 quadplane.in_vtol_land_sequence()) {
+                already_landing = true;
+            }
+#endif
+#if MODE_AUTOLAND_ENABLED
+            if (control_mode == &mode_autoland) {
                 already_landing = true;
             }
 #endif
@@ -294,8 +322,13 @@ void Plane::handle_battery_failsafe(const char *type_str, const int8_t action)
                     plane.mission.set_in_landing_sequence_flag(true);
                     break;
                 }
-                set_mode(mode_rtl, ModeReason::BATTERY_FAILSAFE);
                 aparm.throttle_cruise.load();
+#if MODE_AUTOLAND_ENABLED
+                if (((Failsafe_Action)action == Failsafe_Action_AUTOLAND_OR_RTL) && set_mode(mode_autoland, ModeReason::BATTERY_FAILSAFE)) {
+                    break;
+                }
+#endif
+                set_mode(mode_rtl, ModeReason::BATTERY_FAILSAFE);
             }
             break;
         }
@@ -311,7 +344,7 @@ void Plane::handle_battery_failsafe(const char *type_str, const int8_t action)
             break;
 
         case Failsafe_Action_Parachute:
-#if PARACHUTE == ENABLED
+#if HAL_PARACHUTE_ENABLED
             parachute_release();
 #endif
             break;

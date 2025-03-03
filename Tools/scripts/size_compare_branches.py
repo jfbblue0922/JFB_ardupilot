@@ -5,7 +5,7 @@ Wrapper around elf_diff (https://github.com/noseglasses/elf_diff)
 to create a html report comparing an ArduPilot build across two
 branches
 
-pip3 install --user elf_diff weasyprint
+python3 -m pip install --user elf_diff weasyprint
 
 AP_FLAKE8_CLEAN
 
@@ -21,24 +21,14 @@ import fnmatch
 import optparse
 import os
 import pathlib
+import queue
 import shutil
 import string
 import subprocess
-import sys
 import tempfile
 import threading
 import time
 import board_list
-
-try:
-    import queue as Queue
-except ImportError:
-    import Queue
-
-if sys.version_info[0] < 3:
-    running_python3 = False
-else:
-    running_python3 = True
 
 
 class SizeCompareBranchesResult(object):
@@ -166,6 +156,8 @@ class SizeCompareBranches(object):
             'SITL_arm_linux_gnueabihf',
             'RADIX2HD',
             'canzero',
+            'CUAV-Pixhack-v3',  # uses USE_BOOTLOADER_FROM_BOARD
+            'kha_eth',  # no hwdef-bl.dat
         ])
 
         # blacklist all linux boards for bootloader build:
@@ -178,6 +170,7 @@ class SizeCompareBranches(object):
         # grep 'class.*[(]linux' Tools/ardupilotwaf/boards.py  | perl -pe "s/class (.*)\(linux\).*/            '\\1',/"
         return [
             'navigator',
+            'navigator64',
             'erleboard',
             'navio',
             'navio2',
@@ -200,6 +193,7 @@ class SizeCompareBranches(object):
             'obal',
             'SITL_x86_64_linux_gnu',
             'canzero',
+            'linux',
         ]
 
     def esp32_board_names(self):
@@ -226,11 +220,15 @@ class SizeCompareBranches(object):
     def run_program(self, prefix, cmd_list, show_output=True, env=None, show_output_on_error=True, show_command=None, cwd="."):
         if show_command is None:
             show_command = True
+
+        cmd = " ".join(cmd_list)
+        if cwd is None:
+            cwd = "."
+        command_debug = f"Running ({cmd}) in ({cwd})"
+        process_failure_content = command_debug + "\n"
         if show_command:
-            cmd = " ".join(cmd_list)
-            if cwd is None:
-                cwd = "."
-            self.progress(f"Running ({cmd}) in ({cwd})")
+            self.progress(command_debug)
+
         p = subprocess.Popen(
             cmd_list,
             stdin=None,
@@ -249,17 +247,15 @@ class SizeCompareBranches(object):
                     # select not available on Windows... probably...
                 time.sleep(0.1)
                 continue
-            if running_python3:
-                x = bytearray(x)
-                x = filter(lambda x : chr(x) in string.printable, x)
-                x = "".join([chr(c) for c in x])
+            x = bytearray(x)
+            x = filter(lambda x : chr(x) in string.printable, x)
+            x = "".join([chr(c) for c in x])
             output += x
+            process_failure_content += x
             x = x.rstrip()
             some_output = "%s: %s" % (prefix, x)
             if show_output:
                 print(some_output)
-            else:
-                output += some_output
         (_, status) = returncode
         if status != 0:
             if not show_output and show_output_on_error:
@@ -270,7 +266,7 @@ class SizeCompareBranches(object):
                           str(returncode))
             try:
                 path = pathlib.Path(self.tmpdir, f"process-failure-{int(time.time())}")
-                path.write_text(output)
+                path.write_text(process_failure_content)
                 self.progress("Wrote process failure file (%s)" % path)
             except Exception:
                 self.progress("Writing process failure file failed")
@@ -375,13 +371,14 @@ class SizeCompareBranches(object):
             # need special configuration directive
             bootloader_waf_configure_args = copy.copy(waf_configure_args)
             bootloader_waf_configure_args.append('--bootloader')
-            # hopefully temporary hack so you can build bootloader
-            # after building other vehicles without a clean:
-            dsdl_generated_path = os.path.join('build', board, "modules", "DroneCAN", "libcanard", "dsdlc_generated")
-            self.progress("HACK: Removing (%s)" % dsdl_generated_path)
-            if source_dir is not None:
-                dsdl_generated_path = os.path.join(source_dir, dsdl_generated_path)
-            shutil.rmtree(dsdl_generated_path, ignore_errors=True)
+            if not self.boards_by_name[board].is_ap_periph:
+                # hopefully temporary hack so you can build bootloader
+                # after building other vehicles without a clean:
+                dsdl_generated_path = os.path.join('build', board, "modules", "DroneCAN", "libcanard", "dsdlc_generated")
+                self.progress("HACK: Removing (%s)" % dsdl_generated_path)
+                if source_dir is not None:
+                    dsdl_generated_path = os.path.join(source_dir, dsdl_generated_path)
+                shutil.rmtree(dsdl_generated_path, ignore_errors=True)
             self.run_waf(bootloader_waf_configure_args, show_output=False, source_dir=source_dir)
             self.run_waf([v], show_output=False, source_dir=source_dir)
         self.run_program("rsync", ["rsync", "-ap", "build/", outdir], cwd=source_dir)
@@ -394,12 +391,13 @@ class SizeCompareBranches(object):
             if vehicle == 'AP_Periph':
                 if not board_info.is_ap_periph:
                     continue
+            elif vehicle == 'bootloader':
+                # we generally build bootloaders
+                pass
             else:
                 if board_info.is_ap_periph:
                     continue
-                # the bootloader target isn't an autobuild target, so
-                # it gets special treatment here:
-                if vehicle != 'bootloader' and vehicle.lower() not in [x.lower() for x in board_info.autobuild_targets]:
+                if vehicle.lower() not in [x.lower() for x in board_info.autobuild_targets]:
                     continue
             vehicles_to_build.append(vehicle)
 
@@ -436,7 +434,7 @@ class SizeCompareBranches(object):
         while True:
             try:
                 result = self.thread_exit_result_queue.get_nowait()
-            except Queue.Empty:
+            except queue.Empty:
                 break
             if result is None:
                 continue
@@ -448,7 +446,7 @@ class SizeCompareBranches(object):
         # shared list for the threads:
         self.parallel_tasks = copy.copy(tasks)  # make this an argument instead?!
         threads = []
-        self.thread_exit_result_queue = Queue.Queue()
+        self.thread_exit_result_queue = queue.Queue()
         tstart = time.time()
         self.failure_exceptions = []
 

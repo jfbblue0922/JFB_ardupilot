@@ -7,7 +7,7 @@
 #include <AP_HAL/AP_HAL.h>
 
 #include <SITL/SITL_Input.h>
-#include <SITL/SIM_Gimbal.h>
+#include <SITL/SIM_SoloGimbal.h>
 #include <SITL/SIM_ADSB.h>
 #include <SITL/SIM_Vicon.h>
 #include <SITL/SIM_RF_Benewake_TF02.h>
@@ -99,8 +99,6 @@ private:
     uint16_t _irlock_port;
     float _current;
 
-    bool _synthetic_clock_mode;
-
     bool _use_rtscts;
     bool _use_fg_view;
     
@@ -109,10 +107,10 @@ private:
     // internal SITL model
     SITL::Aircraft *sitl_model;
 
-#if HAL_SIM_GIMBAL_ENABLED
+#if AP_SIM_SOLOGIMBAL_ENABLED
     // simulated gimbal
     bool enable_gimbal;
-    SITL::Gimbal *gimbal;
+    SITL::SoloGimbal *gimbal;
 #endif
 
 #if HAL_SIM_ADSB_ENABLED

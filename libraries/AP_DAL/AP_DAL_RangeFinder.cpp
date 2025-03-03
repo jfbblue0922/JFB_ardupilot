@@ -3,6 +3,9 @@
 #include <AP_Logger/AP_Logger.h>
 
 #include <AP_RangeFinder/AP_RangeFinder_Backend.h>
+
+#if AP_RANGEFINDER_ENABLED
+
 #include "AP_DAL.h"
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>
@@ -33,7 +36,7 @@ failed:
 #endif
 }
 
-int16_t AP_DAL_RangeFinder::ground_clearance_cm_orient(enum Rotation orientation) const
+float AP_DAL_RangeFinder::ground_clearance_orient(enum Rotation orientation) const
 {
 #if !APM_BUILD_TYPE(APM_BUILD_AP_DAL_Standalone)
     const auto *rangefinder = AP::rangefinder();
@@ -41,25 +44,25 @@ int16_t AP_DAL_RangeFinder::ground_clearance_cm_orient(enum Rotation orientation
     if (orientation != ROTATION_PITCH_270) {
         // the EKF only asks for this from a specific orientation.  Thankfully.
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
-        return rangefinder->ground_clearance_cm_orient(orientation);
+        return rangefinder->ground_clearance_orient(orientation);
     }
 #endif
 
-    return _RRNH.ground_clearance_cm;
+    return _RRNH.ground_clearance;
 }
 
-int16_t AP_DAL_RangeFinder::max_distance_cm_orient(enum Rotation orientation) const
+float AP_DAL_RangeFinder::max_distance_orient(enum Rotation orientation) const
 {
 #if !APM_BUILD_TYPE(APM_BUILD_AP_DAL_Standalone)
     if (orientation != ROTATION_PITCH_270) {
         const auto *rangefinder = AP::rangefinder();
         // the EKF only asks for this from a specific orientation.  Thankfully.
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
-        return rangefinder->max_distance_cm_orient(orientation);
+        return rangefinder->max_distance_orient(orientation);
     }
 #endif
 
-    return _RRNH.max_distance_cm;
+    return _RRNH.max_distance;
 }
 
 void AP_DAL_RangeFinder::start_frame()
@@ -72,8 +75,8 @@ void AP_DAL_RangeFinder::start_frame()
     const log_RRNH old = _RRNH;
 
     // EKF only asks for this *down*.
-    _RRNH.ground_clearance_cm = rangefinder->ground_clearance_cm_orient(ROTATION_PITCH_270);
-    _RRNH.max_distance_cm = rangefinder->max_distance_cm_orient(ROTATION_PITCH_270);
+    _RRNH.ground_clearance = rangefinder->ground_clearance_orient(ROTATION_PITCH_270);
+    _RRNH.max_distance = rangefinder->max_distance_orient(ROTATION_PITCH_270);
 
     WRITE_REPLAY_BLOCK_IFCHANGED(RRNH, _RRNH, old);
 
@@ -99,7 +102,7 @@ void AP_DAL_RangeFinder_Backend::start_frame(AP_RangeFinder_Backend *backend) {
     _RRNI.orientation = backend->orientation();
     _RRNI.status = (uint8_t)backend->status();
     _RRNI.pos_offset = backend->get_pos_offset();
-    _RRNI.distance_cm = backend->distance_cm();
+    _RRNI.distance = backend->distance();
     WRITE_REPLAY_BLOCK_IFCHANGED(RRNI, _RRNI, old);
 }
 
@@ -146,3 +149,5 @@ void AP_DAL_RangeFinder::handle_message(const log_RRNI &msg)
         }
     }
 }
+
+#endif  // AP_RANGEFINDER_ENABLED

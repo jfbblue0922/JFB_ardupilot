@@ -7,7 +7,6 @@ Parameters are in-code defaults plus default_params/sub.parm
 AP_FLAKE8_CLEAN
 '''
 
-from __future__ import print_function
 import os
 import sys
 
@@ -16,7 +15,6 @@ from pymavlink import mavutil
 import vehicle_test_suite
 from vehicle_test_suite import NotAchievedException
 from vehicle_test_suite import AutoTestTimeoutException
-from vehicle_test_suite import PreconditionFailedException
 
 if sys.version_info[0] < 3:
     ConnectionResetError = AutoTestTimeoutException
@@ -34,6 +32,22 @@ class Joystick():
     Yaw = 4
     Forward = 5
     Lateral = 6
+
+
+# Values for EK3_MAG_CAL
+class MagCal():
+    WHEN_FLYING = 0
+    WHEN_MANOEUVRING = 1
+    NEVER = 2
+    AFTER_FIRST_CLIMB = 3
+    ALWAYS = 4
+
+
+# Values for XKFS.MAG_FUSION
+class MagFuseSel():
+    NOT_FUSING = 0
+    FUSE_YAW = 1
+    FUSE_MAG = 2
 
 
 class AutoTestSub(vehicle_test_suite.TestSuite):
@@ -180,8 +194,8 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
                 "SCR_ENABLE": 1,
                 "RNGFND1_TYPE": 36,
                 "RNGFND1_ORIENT": 25,
-                "RNGFND1_MIN_CM": 10,
-                "RNGFND1_MAX_CM": 5000,
+                "RNGFND1_MIN": 0.10,
+                "RNGFND1_MAX": 50.00,
             })
 
             self.install_example_script_context("rangefinder_quality_test.lua")
@@ -228,8 +242,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
     def Surftrak(self):
         """Test SURFTRAK mode"""
 
-        if self.get_parameter('RNGFND1_MAX_CM') != 3000.0:
-            raise PreconditionFailedException("RNGFND1_MAX_CM is not %g" % 3000.0)
+        self.assert_parameter_value('RNGFND1_MAX', 30)
 
         # Something closer to Bar30 noise
         self.context_push()
@@ -271,16 +284,17 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         self.disarm_vehicle()
         self.context_pop()
 
-    def prepare_synthetic_seafloor_test(self, sea_floor_depth):
+    def prepare_synthetic_seafloor_test(self, sea_floor_depth, rf_target):
         self.set_parameters({
             "SCR_ENABLE": 1,
             "RNGFND1_TYPE": 36,
             "RNGFND1_ORIENT": 25,
-            "RNGFND1_MIN_CM": 10,
-            "RNGFND1_MAX_CM": 3000,
+            "RNGFND1_MIN": 0.10,
+            "RNGFND1_MAX": 30.00,
             "SCR_USER1": 2,                 # Configuration bundle
             "SCR_USER2": sea_floor_depth,   # Depth in meters
             "SCR_USER3": 101,               # Output log records
+            "SCR_USER4": rf_target,         # Rangefinder target in meters
         })
 
         self.install_example_script_context("sub_test_synthetic_seafloor.lua")
@@ -343,7 +357,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         validation_delta = 1.5  # Largest allowed distance between sub height and desired height
 
         self.context_push()
-        self.prepare_synthetic_seafloor_test(sea_floor_depth)
+        self.prepare_synthetic_seafloor_test(sea_floor_depth, match_distance)
         self.change_mode('MANUAL')
         self.arm_vehicle()
 
@@ -374,7 +388,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         self.set_rc(Joystick.Forward, 1650)
         self.watch_true_distance_maintained(match_distance, delta=validation_delta, timeout=60)
 
-        # The mission ends at end_altitude. Do a check to insure that the sub is at this altitude
+        # The mission ends at end_altitude. Do a check to ensure that the sub is at this altitude
         self.wait_altitude(altitude_min=end_altitude-validation_delta/2, altitude_max=end_altitude+validation_delta/2,
                            relative=False, timeout=1)
 
@@ -382,6 +396,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
 
         self.disarm_vehicle()
         self.context_pop()
+        self.reboot_sitl()  # e.g. revert rangefinder configuration
 
     def SimTerrainMission(self):
         """Mission at a constant height above synthetic sea floor"""
@@ -393,7 +408,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         validation_delta = 1.5  # Largest allowed distance between sub height and desired height
 
         self.context_push()
-        self.prepare_synthetic_seafloor_test(sea_floor_depth)
+        self.prepare_synthetic_seafloor_test(sea_floor_depth, match_distance)
 
         # The synthetic seafloor has an east-west ridge south of the sub.
         # The mission contained in terrain_mission.txt instructs the sub
@@ -415,12 +430,13 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         self.change_mode('AUTO')
         self.watch_true_distance_maintained(match_distance, delta=validation_delta, timeout=500.0, final_waypoint=4)
 
-        # The mission ends at end_altitude. Do a check to insure that the sub is at this altitude.
+        # The mission ends at end_altitude. Do a check to ensure that the sub is at this altitude.
         self.wait_altitude(altitude_min=end_altitude-validation_delta/2, altitude_max=end_altitude+validation_delta/2,
                            relative=False, timeout=1)
 
         self.disarm_vehicle()
         self.context_pop()
+        self.reboot_sitl()  # e.g. revert rangefinder configuration
 
     def ModeChanges(self, delta=0.2):
         """Check if alternating between ALTHOLD, STABILIZE, POSHOLD and SURFTRAK (mode 21) affects altitude"""
@@ -662,7 +678,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
             self.assert_mode('SURFACE')
 
     def MAV_CMD_MISSION_START(self):
-        '''test handling of MAV_CMD_NAV_LAND received via mavlink'''
+        '''test handling of MAV_CMD_MISSION_START received via mavlink'''
         self.upload_simple_relhome_mission([
             (mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2000, 0, 0),
             (mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0),
@@ -737,11 +753,39 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         self._MAV_CMD_CONDITION_YAW(self.run_cmd)
         self._MAV_CMD_CONDITION_YAW(self.run_cmd_int)
 
+    def MAV_CMD_DO_REPOSITION(self):
+        """Move vehicle using MAV_CMD_DO_REPOSITION"""
+        self.wait_ready_to_arm()
+        self.arm_vehicle()
+
+        # Dive so that rangefinder is in range, required for MAV_FRAME_GLOBAL_TERRAIN_ALT
+        start_altitude = -25
+        pwm = 1300 if self.get_altitude(relative=True) > start_altitude else 1700
+        self.set_rc(Joystick.Throttle, pwm)
+        self.wait_altitude(altitude_min=start_altitude-1, altitude_max=start_altitude, relative=False, timeout=120)
+        self.set_rc(Joystick.Throttle, 1500)
+        self.change_mode('GUIDED')
+
+        loc = self.mav.location()
+
+        # Reposition, alt relative to surface
+        loc = self.offset_location_ne(loc, 10, 10)
+        loc.alt = start_altitude
+        self.send_do_reposition(loc, frame=mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT)
+        self.wait_location(loc, timeout=120)
+
+        # Reposition, alt relative to seafloor
+        loc = self.offset_location_ne(loc, 10, 10)
+        loc.alt = -start_altitude
+        self.send_do_reposition(loc, frame=mavutil.mavlink.MAV_FRAME_GLOBAL_TERRAIN_ALT)
+        self.wait_location(loc, timeout=120)
+
+        self.disarm_vehicle()
+
     def TerrainMission(self):
         """Mission using surface tracking"""
 
-        if self.get_parameter('RNGFND1_MAX_CM') != 3000.0:
-            raise PreconditionFailedException("RNGFND1_MAX_CM is not %g" % 3000.0)
+        self.assert_parameter_value('RNGFND1_MAX', 30)
 
         filename = "terrain_mission.txt"
         self.progress("Executing mission %s" % filename)
@@ -819,6 +863,189 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         # restart GPS driver
         self.reboot_sitl()
 
+    def BackupOrigin(self):
+        """Test ORIGIN_LAT and ORIGIN_LON parameters"""
+
+        self.context_push()
+        self.set_parameters({
+            'GPS1_TYPE': 0,              # Disable GPS
+            'EK3_SRC1_POSXY': 0,        # Make sure EK3_SRC parameters do not refer to GPS
+            'EK3_SRC1_VELXY': 0,        # Make sure EK3_SRC parameters do not refer to GPS
+            'ORIGIN_LAT': 47.607584,
+            'ORIGIN_LON': -122.343911,
+        })
+        self.reboot_sitl()
+        self.context_collect('STATUSTEXT')
+
+        # Wait for the EKF to be happy in constant position mode
+        self.wait_ready_to_arm_const_pos()
+
+        if self.current_onboard_log_contains_message('ORGN'):
+            raise NotAchievedException("Found unexpected ORGN message")
+
+        # This should set the origin and write a record to ORGN
+        self.arm_vehicle()
+
+        self.wait_statustext('Using backup location', check_context=True)
+
+        if not self.current_onboard_log_contains_message('ORGN'):
+            raise NotAchievedException("Did not find expected ORGN message")
+
+        self.disarm_vehicle()
+        self.context_pop()
+
+    def assert_mag_fusion_selection(self, expect_sel):
+        """Get the most recent XKFS message and check the MAG_FUSION value"""
+        self.progress("Expect mag fusion selection %d" % expect_sel)
+        mlog = self.dfreader_for_current_onboard_log()
+        found_sel = MagFuseSel.NOT_FUSING
+        while True:
+            m = mlog.recv_match(type='XKFS')
+            if m is None:
+                break
+            found_sel = m.MAG_FUSION
+        if found_sel != expect_sel:
+            raise NotAchievedException("Expected mag fusion selection %d, found %d" % (expect_sel, found_sel))
+
+    def FuseMag(self):
+        """Test EK3_MAG_CAL values"""
+
+        # WHEN_FLYING: switch to FUSE_MAG after sub is armed for 5 seconds; switch to FUSE_YAW on disarm
+        self.set_parameters({'EK3_MAG_CAL': MagCal.WHEN_FLYING})
+        self.reboot_sitl()
+        self.wait_ready_to_arm()
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_YAW)
+        self.arm_vehicle()
+        self.delay_sim_time(10)
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_MAG)
+        self.disarm_vehicle()
+        self.delay_sim_time(1)
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_YAW)
+
+        # AFTER_FIRST_CLIMB: switch to FUSE_MAG after sub is armed and descends 0.5m; switch to FUSE_YAW on disarm
+        self.set_parameters({'EK3_MAG_CAL': MagCal.AFTER_FIRST_CLIMB})
+        self.reboot_sitl()
+        self.wait_ready_to_arm()
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_YAW)
+        altitude = self.get_altitude(relative=True)
+        self.arm_vehicle()
+        self.set_rc(Joystick.Throttle, 1300)
+        self.wait_altitude(altitude_min=altitude-4, altitude_max=altitude-3, relative=False, timeout=60)
+        self.set_rc(Joystick.Throttle, 1500)
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_MAG)
+        self.disarm_vehicle()
+        self.delay_sim_time(1)
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_YAW)
+
+        # ALWAYS
+        self.set_parameters({'EK3_MAG_CAL': MagCal.ALWAYS})
+        self.reboot_sitl()
+        self.wait_ready_to_arm()
+        self.assert_mag_fusion_selection(MagFuseSel.FUSE_MAG)
+
+    def INA3221(self):
+        '''test INA3221 driver'''
+        self.set_parameters({
+            "BATT2_MONITOR": 30,
+            "BATT3_MONITOR": 30,
+            "BATT4_MONITOR": 30,
+        })
+        self.reboot_sitl()
+        self.set_parameters({
+            "BATT2_I2C_ADDR": 0x42, # address defined in libraries/SITL/SIM_I2C.cpp
+            "BATT2_I2C_BUS": 1,
+            "BATT2_CHANNEL": 1,
+
+            "BATT3_I2C_ADDR": 0x42,
+            "BATT3_I2C_BUS": 1,
+            "BATT3_CHANNEL": 2,
+
+            "BATT4_I2C_ADDR": 0x42,
+            "BATT4_I2C_BUS": 1,
+            "BATT4_CHANNEL": 3,
+        })
+        self.reboot_sitl()
+
+        seen_1 = False
+        seen_3 = False
+        tstart = self.get_sim_time()
+        while not (seen_1 and seen_3):
+            m = self.assert_receive_message('BATTERY_STATUS')
+            if self.get_sim_time() - tstart > 10:
+                # expected to take under 1 simulated second, but don't hang if
+                # e.g. the driver gets stuck
+                raise NotAchievedException("INA3221 status timeout")
+            if m.id == 1:
+                self.assert_message_field_values(m, {
+                    # values close to chip limits
+                    "voltages[0]": int(25 * 1000), # millivolts
+                    "current_battery": int(160 * 100), # centi-amps
+                }, epsilon=10) # allow rounding
+                seen_1 = True
+            # id 2 is the first simulated battery current/voltage
+            if m.id == 3:
+                self.assert_message_field_values(m, {
+                    # values different from above to test channel switching
+                    "voltages[0]": int(3.14159 * 1000), # millivolts
+                    "current_battery": int(2.71828 * 100), # centi-amps
+                }, epsilon=10) # allow rounding
+                seen_3 = True
+
+    def wait_for_stop(self):
+        """Watch the sub slow down and stop"""
+        tstart = self.get_sim_time_cached()
+        lstart = self.mav.location()
+
+        dmax = 0
+        dprev = 0
+
+        while True:
+            self.delay_sim_time(1)
+
+            dcurr = self.get_distance(lstart, self.mav.location())
+
+            if dcurr - dmax < -0.2:
+                raise NotAchievedException("Bounced back from %.2fm to %.2fm" % (dmax, dcurr))
+            if dcurr > dmax:
+                dmax = dcurr
+
+            if abs(dcurr - dprev) < 0.1:
+                self.progress("Stopping distance %.2fm, less than %.2fs" % (dcurr, self.get_sim_time_cached() - tstart))
+                return
+
+            if self.get_sim_time_cached() - tstart > 10:
+                raise NotAchievedException("Took to long to stop")
+
+            dprev = dcurr
+
+    def PosHoldBounceBack(self):
+        """Test for bounce back in POSHOLD mode"""
+        self.wait_ready_to_arm()
+        self.arm_vehicle()
+
+        # dive a little
+        self.set_rc(Joystick.Throttle, 1300)
+        self.delay_sim_time(3)
+        self.set_rc(Joystick.Throttle, 1500)
+        self.delay_sim_time(2)
+
+        # hold position
+        self.change_mode('POSHOLD')
+
+        for pilot_speed in range(50, 251, 100):
+            # set max speed
+            self.set_parameter('PILOT_SPEED', pilot_speed)
+
+            # try different stick values, resulting speed is ~ max_speed * effort * gain
+            for pwm in range(1700, 1901, 100):
+                self.progress('PILOT_SPEED %d, forward pwm %d' % (pilot_speed, pwm))
+                self.set_rc(Joystick.Forward, pwm)
+                self.delay_sim_time(3)
+                self.set_rc(Joystick.Forward, 1500)
+                self.wait_for_stop()
+
+        self.disarm_vehicle()
+
     def tests(self):
         '''return list of all tests'''
         ret = super(AutoTestSub, self).tests()
@@ -839,13 +1066,19 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
             self.SET_POSITION_TARGET_GLOBAL_INT,
             self.TestLogDownloadMAVProxy,
             self.TestLogDownloadMAVProxyNetwork,
+            self.TestLogDownloadLogRestart,
             self.MAV_CMD_NAV_LOITER_UNLIM,
             self.MAV_CMD_NAV_LAND,
             self.MAV_CMD_MISSION_START,
             self.MAV_CMD_DO_CHANGE_SPEED,
             self.MAV_CMD_CONDITION_YAW,
+            self.MAV_CMD_DO_REPOSITION,
             self.TerrainMission,
             self.SetGlobalOrigin,
+            self.BackupOrigin,
+            self.FuseMag,
+            self.INA3221,
+            self.PosHoldBounceBack,
         ])
 
         return ret

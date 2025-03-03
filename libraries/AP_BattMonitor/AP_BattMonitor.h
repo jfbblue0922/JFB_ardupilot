@@ -26,7 +26,7 @@
 #define AP_BATT_MONITOR_RES_EST_TC_1        0.5f
 #define AP_BATT_MONITOR_RES_EST_TC_2        0.1f
 
-#if BOARD_FLASH_SIZE > 1024
+#if HAL_PROGRAM_SIZE_LIMIT_KB > 1024
 #define AP_BATT_MONITOR_CELLS_MAX           14
 #else
 #define AP_BATT_MONITOR_CELLS_MAX           12
@@ -70,6 +70,7 @@ class AP_BattMonitor
     friend class AP_BattMonitor_INA239;
     friend class AP_BattMonitor_LTC2946;
     friend class AP_BattMonitor_AD7091R5;
+    friend class AP_BattMonitor_INA3221;
 
     friend class AP_BattMonitor_Torqeedo;
     friend class AP_BattMonitor_FuelLevel_Analog;
@@ -81,6 +82,7 @@ public:
     // battery failsafes must be defined in levels of severity so that vehicles wont fall backwards
     enum class Failsafe : uint8_t {
         None = 0,
+        Unhealthy,
         Low,
         Critical
     };
@@ -115,6 +117,7 @@ public:
         EFI                            = 27,
         AD7091R5                       = 28,
         Scripting                      = 29,
+        INA3221                        = 30,
     };
 
     FUNCTOR_TYPEDEF(battery_failsafe_handler_fn_t, void, const char *, const int8_t);
@@ -153,6 +156,7 @@ public:
         float       resistance;                // resistance, in Ohms, calculated by comparing resting voltage vs in flight voltage
         Failsafe failsafe;                     // stage failsafe the battery is in
         bool        healthy;                   // battery monitor is communicating correctly
+        uint32_t    last_healthy_ms;           // Time when monitor was last healthy
         bool        is_powering_off;           // true when power button commands power off
         bool        powerOffNotified;          // only send powering off notification once
         uint32_t    time_remaining;            // remaining battery time
@@ -170,7 +174,7 @@ public:
     uint8_t num_instances(void) const { return _num_instances; }
 
     // detect and initialise any available battery monitors
-    void init();
+    __INITFUNC__ void init();
 
     /// Read the battery voltage and current for all batteries.  Should be called at 10hz
     void read();
@@ -259,6 +263,8 @@ public:
     // MPPT Control (Solar panels)
     void MPPT_set_powered_state_to_all(const bool power_on);
     void MPPT_set_powered_state(const uint8_t instance, const bool power_on);
+
+    bool option_is_set(uint8_t instance, AP_BattMonitor_Params::Options option) const;
 
     // cycle count
     bool get_cycle_count(uint8_t instance, uint16_t &cycles) const;

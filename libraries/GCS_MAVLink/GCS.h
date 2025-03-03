@@ -27,6 +27,7 @@
 #include <AP_Winch/AP_Winch_config.h>
 #include <AP_AHRS/AP_AHRS_config.h>
 #include <AP_Arming/AP_Arming_config.h>
+#include <AP_Airspeed/AP_Airspeed_config.h>
 
 #include "ap_message.h"
 
@@ -266,6 +267,9 @@ public:
     // accessor for uart
     AP_HAL::UARTDriver *get_uart() { return _port; }
 
+    // cap the MAVLink message rate. It can't be greater than 0.8 * SCHED_LOOP_RATE
+    uint16_t cap_message_interval(uint16_t interval_ms) const;
+
     virtual uint8_t sysid_my_gcs() const = 0;
     virtual bool sysid_enforce() const { return false; }
 
@@ -360,12 +364,15 @@ public:
     void send_scaled_pressure();
     void send_scaled_pressure2();
     virtual void send_scaled_pressure3(); // allow sub to override this
+#if AP_AIRSPEED_ENABLED
+    // Send per instance airspeed message
+    // last index is used to rotate through sensors
+    void send_airspeed();
+    uint8_t last_airspeed_idx;
+#endif
     void send_simstate() const;
     void send_sim_state() const;
     void send_ahrs();
-#if AP_MAVLINK_BATTERY2_ENABLED
-    void send_battery2();
-#endif
     void send_opticalflow();
     virtual void send_attitude() const;
     virtual void send_attitude_quaternion() const;
@@ -393,7 +400,6 @@ public:
 #if AP_WINCH_ENABLED
     virtual void send_winch_status() const {};
 #endif
-    void send_water_depth() const;
     int8_t battery_remaining_pct(const uint8_t instance) const;
 
 #if HAL_HIGH_LATENCY2_ENABLED
@@ -401,6 +407,10 @@ public:
 #endif // HAL_HIGH_LATENCY2_ENABLED
     void send_uavionix_adsb_out_status() const;
     void send_autopilot_state_for_gimbal_device() const;
+
+    // Send the mode with the given index (not mode number!) return the total number of modes
+    // Index starts at 1
+    virtual uint8_t send_available_mode(uint8_t index) const = 0;
 
     // lock a channel, preventing use by MAVLink
     void lock(bool _lock) {
@@ -496,7 +506,7 @@ protected:
     bool accept_packet(const mavlink_status_t &status, const mavlink_message_t &msg) const;
     void set_ekf_origin(const Location& loc);
 
-    virtual MAV_MODE base_mode() const = 0;
+    virtual uint8_t base_mode() const = 0;
     MAV_STATE system_status() const;
     virtual MAV_STATE vehicle_system_status() const = 0;
 
@@ -525,6 +535,7 @@ protected:
 
     virtual MAV_RESULT handle_command_int_packet(const mavlink_command_int_t &packet, const mavlink_message_t &msg);
     MAV_RESULT handle_command_int_external_position_estimate(const mavlink_command_int_t &packet);
+    MAV_RESULT handle_command_int_external_wind_estimate(const mavlink_command_int_t &packet);
 
 #if AP_HOME_ENABLED
     MAV_RESULT handle_command_do_set_home(const mavlink_command_int_t &packet);
@@ -732,7 +743,7 @@ protected:
 #endif // HAL_HIGH_LATENCY2_ENABLED
     
     static constexpr const float magic_force_arm_value = 2989.0f;
-    static constexpr const float magic_force_disarm_value = 21196.0f;
+    static constexpr const float magic_force_arm_disarm_value = 21196.0f;
 
     void manual_override(class RC_Channel *c, int16_t value_in, uint16_t offset, float scaler, const uint32_t tnow, bool reversed = false);
 
@@ -783,7 +794,7 @@ private:
     };
     void log_mavlink_stats();
 
-    MAV_RESULT _set_mode_common(const MAV_MODE base_mode, const uint32_t custom_mode);
+    MAV_RESULT _set_mode_common(const uint8_t base_mode, const uint32_t custom_mode);
 
     // send a (textual) message to the GCS that a received message has
     // been deprecated
@@ -1115,6 +1126,17 @@ private:
     // true if we should NOT do MAVLink on this port (usually because
     // someone's doing SERIAL_CONTROL over mavlink)
     bool _locked;
+
+    // Handling of AVAILABLE_MODES
+    struct {
+        bool should_send;
+        // Note these start at 1
+        uint8_t requested_index;
+        uint8_t next_index;
+    } available_modes;
+    bool send_available_modes();
+    bool send_available_mode_monitor();
+
 };
 
 /// @class GCS
@@ -1271,6 +1293,16 @@ public:
 
     virtual uint8_t sysid_this_mav() const = 0;
 
+#if AP_SCRIPTING_ENABLED
+    // lua access to command_int
+    MAV_RESULT lua_command_int_packet(const mavlink_command_int_t &packet);
+#endif
+
+    // Sequence number should be incremented when available modes changes
+    // Sent in AVAILABLE_MODES_MONITOR msg
+    uint8_t get_available_modes_sequence() const { return available_modes_sequence; }
+    void available_modes_changed() { available_modes_sequence += 1; }
+
 protected:
 
     virtual GCS_MAVLINK *new_gcs_mavlink_backend(GCS_MAVLINK_Parameters &params,
@@ -1348,6 +1380,10 @@ private:
     // GCS::update_send is called so we don't starve later links of
     // time in which they are permitted to send messages.
     uint8_t first_backend_to_send;
+
+    // Sequence number should be incremented when available modes changes
+    // Sent in AVAILABLE_MODES_MONITOR msg
+    uint8_t available_modes_sequence;
 };
 
 GCS &gcs();

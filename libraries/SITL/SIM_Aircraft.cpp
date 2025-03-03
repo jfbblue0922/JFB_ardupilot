@@ -33,6 +33,7 @@
 #include <AP_Filesystem/AP_Filesystem.h>
 #include <AP_AHRS/AP_AHRS.h>
 #include <AP_HAL_SITL/HAL_SITL_Class.h>
+#include <AP_Vehicle/AP_Vehicle_Type.h>
 
 using namespace SITL;
 
@@ -121,6 +122,16 @@ float Aircraft::ground_height_difference() const
     return local_ground_level;
 }
 
+float Aircraft::ambient_temperature_degC() const
+{
+    // FIXME: AP_Baro_SITL should be getting temperature from the
+    // simulated aircraft, not the other way around!
+#if !APM_BUILD_TYPE(APM_BUILD_AP_Periph)    // Periph does not instantiate Baro
+    return AP::baro().get_temperature();
+#endif
+    return 25.0;
+}
+
 void Aircraft::set_precland(SIM_Precland *_precland) {
     precland = _precland;
     precland->set_default_location(home.lat * 1.0e-7f, home.lng * 1.0e-7f, static_cast<int16_t>(get_home_yaw()));
@@ -181,7 +192,7 @@ void Aircraft::update_position(void)
         uint32_t now = AP_HAL::millis();
         if (now - last_one_hz_ms >= 1000) {
             // shift origin of position at 1Hz to current location
-            // this prevents sperical errors building up in the GPS data
+            // this prevents spherical errors building up in the GPS data
             last_one_hz_ms = now;
             Vector2d diffNE = origin.get_distance_NE_double(location);
             position.xy() -= diffNE;
@@ -500,22 +511,50 @@ void Aircraft::fill_fdm(struct sitl_fdm &fdm)
 #endif
 }
 
-// returns perpendicular height to surface downward-facing rangefinder
-// is bouncing off:
+/*
+  rover and copter have special handling for horizontal rangefinders
+  as distance to obstacles - this takes effect for yaw-only
+  orientations
+ */
+#define SITL_RANGEFINDER_AS_OBJECT_SENSOR (APM_BUILD_TYPE(APM_BUILD_ArduCopter) || APM_BUILD_TYPE(APM_BUILD_Rover))
+#define SITL_RANGEFINDER_IS_YAW_ONLY(orientation) (orientation <= ROTATION_YAW_315)
+
+// returns perpendicular height to surface rangefinder is bouncing off
 float Aircraft::perpendicular_distance_to_rangefinder_surface() const
 {
-    switch ((Rotation)sitl->sonar_rot.get()) {
-    case Rotation::ROTATION_PITCH_270:
-        return sitl->state.height_agl;
-    case ROTATION_NONE ... ROTATION_YAW_315:
+#if SITL_RANGEFINDER_AS_OBJECT_SENSOR
+    const auto orientation = (Rotation)sitl->sonar_rot.get();
+    if (SITL_RANGEFINDER_IS_YAW_ONLY(orientation)) {
+        // assume these are avoidance sensors
         return sitl->measure_distance_at_angle_bf(location, sitl->sonar_rot.get()*45);
-    default:
-        AP_BoardConfig::config_error("Bad simulated sonar rotation");
     }
+#endif
+
+    // default is ground sensing rangefinders
+    return sitl->state.height_agl;
 }
 
 float Aircraft::rangefinder_range() const
 {
+    float altitude = perpendicular_distance_to_rangefinder_surface();
+
+    // sensor position offset in body frame
+    const Vector3f relPosSensorBF = sitl->rngfnd_pos_offset;
+
+    // n.b. the following code is assuming rotation-pitch-270:
+    // adjust altitude for position of the sensor on the vehicle if position offset is non-zero
+    if (!relPosSensorBF.is_zero()) {
+        // get a rotation matrix following DCM conventions (body to earth)
+        Matrix3f rotmat;
+        sitl->state.quaternion.rotation_matrix(rotmat);
+        // rotate the offset into earth frame
+        const Vector3f relPosSensorEF = rotmat * relPosSensorBF;
+        // correct the altitude at the sensor
+        altitude -= relPosSensorEF.z;
+    }
+
+    const auto orientation = (Rotation)sitl->sonar_rot.get();
+#if SITL_RANGEFINDER_AS_OBJECT_SENSOR
 
     float roll = sitl->state.rollDeg;
     float pitch = sitl->state.pitchDeg;
@@ -543,33 +582,47 @@ float Aircraft::rangefinder_range() const
         }
     }
 
-    if (fabs(roll) >= 90.0 || fabs(pitch) >= 90.0) {
-        // not going to hit the ground....
-        return INFINITY;
-    }
-
-    float altitude = perpendicular_distance_to_rangefinder_surface();
-
-    // sensor position offset in body frame
-    const Vector3f relPosSensorBF = sitl->rngfnd_pos_offset;
-
-    // n.b. the following code is assuming rotation-pitch-270:
-    // adjust altitude for position of the sensor on the vehicle if position offset is non-zero
-    if (!relPosSensorBF.is_zero()) {
-        // get a rotation matrix following DCM conventions (body to earth)
+    /*
+      rover and copter using SITL rangefinders as obstacle sensors
+     */
+    if (SITL_RANGEFINDER_IS_YAW_ONLY(orientation)) {
+        if (fabs(roll) >= 90.0 || fabs(pitch) >= 90.0) {
+            // not going to hit the ground....
+            return INFINITY;
+        }
+        altitude /= cosf(radians(roll)) * cosf(radians(pitch));
+    } else
+#endif
+    {
+        // adjust for rotation based on orientation of the sensor
         Matrix3f rotmat;
         sitl->state.quaternion.rotation_matrix(rotmat);
-        // rotate the offset into earth frame
-        const Vector3f relPosSensorEF = rotmat * relPosSensorBF;
-        // correct the altitude at the sensor
-        altitude -= relPosSensorEF.z;
-    }
+        Vector3f v{1, 0, 0};
+        v.rotate(orientation);
+        v = rotmat * v;
 
-    // adjust for apparent altitude with roll
-    altitude /= cosf(radians(roll)) * cosf(radians(pitch));
+        if (!is_positive(v.z)) {
+            return INFINITY;
+        }
+        altitude /= v.z;
+
+        // this is awful, but there are drawbacks to assuming an
+        // infinite plane.  If we don't do this here then we end up
+        // with a ridiculous rangefinder range, and that can cause
+        // floating point exceptions when we return a distance in cm
+        // from the AP_RangeFinder_SITL.
+        if (altitude > 100000) {
+            return INFINITY;
+        }
+    }
 
     // Add some noise on reading
     altitude += sitl->sonar_noise * rand_float();
+
+    // our starting positions can disagree with the terrain database:
+    if (altitude < 0) {
+        altitude = 0;
+    }
 
     return altitude;
 }
@@ -795,6 +848,16 @@ void Aircraft::update_dynamics(const Vector3f &rot_accel)
         }
         }
     }
+
+    // update slung payload
+#if AP_SIM_SLUNGPAYLOAD_ENABLED
+    sitl->models.slung_payload_sim.update(get_position_relhome(), velocity_ef, accel_earth, wind_ef);
+#endif
+
+    // update tether
+#if AP_SIM_TETHER_ENABLED
+    sitl->models.tether_sim.update(location);
+#endif
 
     // allow for changes in physics step
     adjust_frame_time(constrain_float(sitl->loop_rate_hz, rate_hz-1, rate_hz+1));
@@ -1024,6 +1087,9 @@ void Aircraft::update_external_payload(const struct sitl_input &input)
 
     {
         const float range = rangefinder_range();
+        if (!isinf(range) && range > 100000) {
+            AP_HAL::panic("Bad rangefinder calculation");
+        }
         for (uint8_t i=0; i<ARRAY_SIZE(rangefinder_m); i++) {
             rangefinder_m[i] = range;
         }
@@ -1079,6 +1145,12 @@ void Aircraft::update_external_payload(const struct sitl_input &input)
         fetteconewireesc->update(*this);
     }
 
+#if AP_SIM_VOLZ_ENABLED
+    if (volz) {
+        volz->update(*this);
+    }
+#endif  // AP_SIM_VOLZ_ENABLED
+
 #if AP_SIM_SHIP_ENABLED
     sitl->models.shipsim.update();
 #endif
@@ -1092,6 +1164,19 @@ void Aircraft::update_external_payload(const struct sitl_input &input)
     if (dronecan) {
         dronecan->update();
     }
+#endif
+
+#if AP_SIM_GPIO_LED_1_ENABLED
+    sim_led1.update(*this);
+#endif
+#if AP_SIM_GPIO_LED_2_ENABLED
+    sim_led2.update(*this);
+#endif
+#if AP_SIM_GPIO_LED_3_ENABLED
+    sim_led3.update(*this);
+#endif
+#if AP_SIM_GPIO_LED_RGB_ENABLED
+    sim_ledrgb.update(*this);
 #endif
 }
 
@@ -1212,6 +1297,27 @@ void Aircraft::add_twist_forces(Vector3f &rot_accel)
         sitl->twist.start_ms = 0;
         sitl->twist.t.set(0);
     }
+}
+
+// add body-frame force due to slung payload and tether
+void Aircraft::add_external_forces(Vector3f &body_accel)
+{
+    Vector3f total_force;
+#if AP_SIM_SLUNGPAYLOAD_ENABLED
+    Vector3f forces_ef_slung;
+    sitl->models.slung_payload_sim.get_forces_on_vehicle(forces_ef_slung);
+    total_force += forces_ef_slung;
+#endif
+
+#if AP_SIM_TETHER_ENABLED
+    Vector3f forces_ef_tether;
+    sitl->models.tether_sim.get_forces_on_vehicle(forces_ef_tether);
+    total_force += forces_ef_tether;
+#endif
+
+    // convert ef forces to body-frame accelerations (acceleration = force / mass)
+    const Vector3f accel_bf_tether = dcm.transposed() * total_force / mass;
+    body_accel += accel_bf_tether;
 }
 
 /*
