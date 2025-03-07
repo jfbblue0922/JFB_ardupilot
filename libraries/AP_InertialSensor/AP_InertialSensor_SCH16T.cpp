@@ -24,7 +24,7 @@
 
 static constexpr uint16_t EOI = (1 << 1);               // End of Initialization
 static constexpr uint16_t EN_SENSOR = (1 << 0);         // Enable RATE and ACC measurement
-// static constexpr uint16_t DRY_DRV_EN = (1 << 5);        // Enables Data ready function
+static constexpr uint16_t DRY_DRV_EN = (1 << 5);        // Enables Data ready function
 // static constexpr uint16_t FILTER_68HZ = (0x0000);       // 68 Hz default filter
 static constexpr uint16_t FILTER_BYPASS = (0b0000000111111111);     // No filtering
 static constexpr uint16_t RATE_300DPS_1475HZ = 0b0001001011011011; // Gyro XYZ range 300 deg/s @ 1475Hz
@@ -332,7 +332,10 @@ void AP_InertialSensor_SCH16T::configure_registers()
         register_write(r.addr, r.value);
     }
 
-    // register_write(CTRL_USER_IF, DRY_DRV_EN); // Enable data ready
+    register_read(CTRL_USER_IF);
+    uint16_t user_if = SPI48_DATA_UINT16(register_read(CTRL_USER_IF));
+
+    register_write(CTRL_USER_IF, (user_if | DRY_DRV_EN)); // Enable data ready
     register_write(CTRL_MODE, EN_SENSOR); // Enable the sensor
 }
 
