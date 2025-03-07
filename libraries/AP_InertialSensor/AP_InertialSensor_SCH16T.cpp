@@ -24,8 +24,8 @@
 
 static constexpr uint16_t EOI = (1 << 1);               // End of Initialization
 static constexpr uint16_t EN_SENSOR = (1 << 0);         // Enable RATE and ACC measurement
-static constexpr uint16_t DRY_DRV_EN = (1 << 5);        // Enables Data ready function
-static constexpr uint16_t FILTER_68HZ = (0x0000);       // 68 Hz default filter
+// static constexpr uint16_t DRY_DRV_EN = (1 << 5);        // Enables Data ready function
+// static constexpr uint16_t FILTER_68HZ = (0x0000);       // 68 Hz default filter
 static constexpr uint16_t FILTER_BYPASS = (0b0000000111111111);     // No filtering
 static constexpr uint16_t RATE_300DPS_1475HZ = 0b0001001011011011; // Gyro XYZ range 300 deg/s @ 1475Hz
 static constexpr uint16_t ACC12_8G_1475HZ = 0b0001001011011011;  // Acc XYZ range 8 G and 1475 update rate
