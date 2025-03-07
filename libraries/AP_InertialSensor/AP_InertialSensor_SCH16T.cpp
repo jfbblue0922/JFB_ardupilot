@@ -320,7 +320,8 @@ bool AP_InertialSensor_SCH16T::read_product_id()
 
     // SCH16T-K01   -   ID hex = 0x0020
     // SCH1633-B13  -   ID hex = 0x0017
-    bool success = asic_id == 0x20 && comp_id == 0x17;
+    // bool success = asic_id == 0x20 && comp_id == 0x17;
+    bool success = asic_id == 0x21 && comp_id == 0x23;
 
     return success;
 }
@@ -331,7 +332,7 @@ void AP_InertialSensor_SCH16T::configure_registers()
         register_write(r.addr, r.value);
     }
 
-    register_write(CTRL_USER_IF, DRY_DRV_EN); // Enable data ready
+    // register_write(CTRL_USER_IF, DRY_DRV_EN); // Enable data ready
     register_write(CTRL_MODE, EN_SENSOR); // Enable the sensor
 }
 
