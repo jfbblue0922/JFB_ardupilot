@@ -264,7 +264,8 @@ bool AP_InertialSensor_SCH16T::read_data(SensorData *data)
     uint64_t acc_z  = register_read(TEMP);
     uint64_t temp   = register_read(TEMP);
 
-    static constexpr uint64_t MASK48_ERROR = 0x001E00000000UL;
+    //static constexpr uint64_t MASK48_ERROR = 0x001E00000000UL;
+    static constexpr uint64_t MASK48_ERROR = 0x001A00000000UL;
     uint64_t values[] = { gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z, temp };
 
     for (auto v : values) {
