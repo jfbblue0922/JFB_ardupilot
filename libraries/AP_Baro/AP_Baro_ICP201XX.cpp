@@ -114,13 +114,9 @@ bool AP_Baro_ICP201XX::init()
     read_reg(REG_DEVICE_ID, &id);
     read_reg(REG_VERSION, &ver);
 
-    printf("ICP201XX ID = 0x%02x 0x%02x \n", REG_DEVICE_ID, id);
-
     if (id != ICP201XX_ID) {
         goto failed;
     }
-
-    printf("ICP201XX VER = 0x%02x 0x%02x \n", REG_VERSION, ver);
 
     if (ver != 0x00 && ver != 0xB2) {
         goto failed;
