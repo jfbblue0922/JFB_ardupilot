@@ -24,6 +24,11 @@
 #define FRAME_HEADER_2_A  'A'    // 0x41
 #define FRAME_HEADER_2_B  'B'    // 0x42
 #define FRAME_HEADER_2_C  'C'    // 0x43
+#define FRAME_HEADER_2_X  'X'    // 0x58
+#define FRAME_HEADER_3_A  'A'    // 0x41
+#define FRAME_HEADER_4_A  'A'    // 0x41
+#define FRAME_HEADER_4_B  'B'    // 0x42
+#define FRAME_HEADER_4_C  'C'    // 0x43
 
 #define DIST_MAX 50.00
 #define OUT_OF_RANGE_ADD   1.0  // metres
@@ -31,7 +36,7 @@
 void AP_RangeFinder_JRE_Serial::move_preamble_in_buffer(uint8_t search_start_pos)
 {
     uint8_t i;
-    for (i=search_start_pos; i<data_buff_ofs; i++) {
+    for (i = search_start_pos; i < data_buff_ofs; i++) {
         if (data_buff[i] == FRAME_HEADER_1) {
             break;
         }
@@ -64,6 +69,7 @@ bool AP_RangeFinder_JRE_Serial::get_reading(float &reading_m)
         if (num_bytes_read == 0) {
             break;
         }
+
         if (bytes_available < num_bytes_read) {
             // this is a bug in the uart call.
             break;
@@ -81,8 +87,10 @@ bool AP_RangeFinder_JRE_Serial::get_reading(float &reading_m)
 
         // determine packet length for incoming packet:
         uint8_t packet_length;
+        bool is_ext_packet = false;
+
         switch (data_buff[1]) {
-        case FRAME_HEADER_2_A:                   
+        case FRAME_HEADER_2_A:
             packet_length = 16;
             break;
         case FRAME_HEADER_2_B:
@@ -91,9 +99,39 @@ bool AP_RangeFinder_JRE_Serial::get_reading(float &reading_m)
         case FRAME_HEADER_2_C:
             packet_length = 48;
             break;
+        case FRAME_HEADER_2_X:
+            is_ext_packet = true;
+            break;
         default:
             move_preamble_in_buffer(1);
             continue;
+        }
+
+        if (is_ext_packet) {
+            if (data_buff_ofs < 4) {
+                continue;
+            }
+
+            if (data_buff[2] == FRAME_HEADER_3_A) {
+                switch (data_buff[3]) {
+                case FRAME_HEADER_4_A:
+                    packet_length = 30;
+                    break;
+                case FRAME_HEADER_4_B:
+                    packet_length = 50;
+                    break;
+                case FRAME_HEADER_4_C:
+                    packet_length = 70;
+                    break;
+                default:
+                    move_preamble_in_buffer(3);
+                    continue;
+                }
+            }
+            else {
+                move_preamble_in_buffer(2);
+                continue;
+            }
         }
 
         // check there are enough bytes for message type
@@ -103,14 +141,30 @@ bool AP_RangeFinder_JRE_Serial::get_reading(float &reading_m)
 
         // check the checksum
         const uint16_t crc = crc16_ccitt_r(data_buff, packet_length - 2, 0xffff, 0xffff);
-        if (crc != ((data_buff[packet_length-1] << 8) | data_buff[packet_length-2])) {
+        if (crc != ((data_buff[packet_length - 1] << 8) | data_buff[packet_length - 2])) {
             // CRC failure
-            move_preamble_in_buffer(1);
+            if (!is_ext_packet) {
+                move_preamble_in_buffer(4);
+            }
+            else {
+                move_preamble_in_buffer(2);
+            }
             continue;
         }
 
+        uint8_t status_ntrk_offset_from_end;
+        uint8_t altitude_offset;
+        if (is_ext_packet) {
+            status_ntrk_offset_from_end = 7;
+            altitude_offset = 11;
+        }
+        else {
+            status_ntrk_offset_from_end = 3;
+            altitude_offset = 4;
+        }
+
         // check random bit to for magic value:
-        if (data_buff[packet_length-3] & 0x02) { // NTRK
+        if (data_buff[packet_length - status_ntrk_offset_from_end] & 0x02) { // NTRK
             invalid_count++;
             // discard entire packet:
             move_preamble_in_buffer(packet_length);
@@ -118,7 +172,7 @@ bool AP_RangeFinder_JRE_Serial::get_reading(float &reading_m)
         }
 
         // good message, extract rangefinder reading:
-        reading_m = (data_buff[4] * 256 + data_buff[5]) * 0.01f;
+        reading_m = (data_buff[altitude_offset] * 256 + data_buff[altitude_offset + 1]) * 0.01f;
         sum += reading_m;
         valid_count++;
         move_preamble_in_buffer(packet_length);
