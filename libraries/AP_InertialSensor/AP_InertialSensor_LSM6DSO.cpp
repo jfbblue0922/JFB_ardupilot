@@ -22,6 +22,7 @@ AP_InertialSensor_LSM6DSO::AP_InertialSensor_LSM6DSO(AP_InertialSensor &imu,
     , _dev(std::move(dev))
     , _rotation(rotation)
 {
+    _temp_degc = 0.0F;
 }
 
 AP_InertialSensor_Backend *AP_InertialSensor_LSM6DSO::probe(AP_InertialSensor &_imu,
@@ -238,10 +239,10 @@ void AP_InertialSensor_LSM6DSO::_fifo_init()
 
     // FIFO_CTRL4(0Ah) : 06h
     //      DEC_TS_BATCH = 00b (timestamp not batched)
-    //      ODR_T_BATCH  = 00b (temperature not batched)
+    //      ODR_T_BATCH  = 11b (temperature 52Hz)
     //      FIFO_MODE    = 110b (Continuous mode)
     _register_write(LSM6DSO_REG_FIFO_CTRL4, LSM6DSO_REG_FIFO_CTRL4_DEC_TS_BATCH_NOT_BATCH |
-                                            LSM6DSO_REG_FIFO_CTRL4_DEC_ODR_T_BATCH_NOT_BATCH |
+                                            LSM6DSO_REG_FIFO_CTRL4_DEC_ODR_T_BATCH_52Hz |
                                             LSM6DSO_REG_FIFO_CTRL4_FIFO_MODE_CONT);
     hal.scheduler->delay(1);
 }
@@ -461,6 +462,9 @@ void AP_InertialSensor_LSM6DSO::_poll_data()
         case 0x02:
             _update_transaction_x(raw_data);
             break;
+        case 0x03:
+            _temp_degc = (float)raw_data.x / 256.0F + 25.0;
+            break;
         default:
             // unused fifo data
             ;
@@ -502,6 +506,7 @@ bool AP_InertialSensor_LSM6DSO::update()
     update_gyro(gyro_instance);
     update_accel(accel_instance);
 
+    _publish_temperature(accel_instance, _temp_degc);
     return true;
 }
 

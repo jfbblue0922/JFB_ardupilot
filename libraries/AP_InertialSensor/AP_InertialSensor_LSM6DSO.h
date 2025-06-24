@@ -80,4 +80,7 @@ private:
     float _gyro_scale;
     float _accel_scale;
     enum Rotation _rotation;
+
+    float _temp_degc;
+
 };
