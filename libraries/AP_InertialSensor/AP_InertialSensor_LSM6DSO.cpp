@@ -230,11 +230,11 @@ void AP_InertialSensor_LSM6DSO::_fifo_init()
     _register_write(LSM6DSO_REG_FIFO_CTRL2, 0x00);
     hal.scheduler->delay(1);
 
-    // FIFO_CTRL3(09h) : 77h
-    //      BDR_GY = 0111b (833Hz)
-    //      BDR_XL = 0111b (833Hz)
-    _register_write(LSM6DSO_REG_FIFO_CTRL3, LSM6DSO_REG_FIFO_CTRL3_BDR_GY_833Hz |
-                                            LSM6DSO_REG_FIFO_CTRL3_BDR_XL_833Hz);
+    // FIFO_CTRL3(09h) : 99h
+    //      BDR_GY = 1001b (3.33KHz)
+    //      BDR_XL = 1001b (3.33KHz)
+    _register_write(LSM6DSO_REG_FIFO_CTRL3, LSM6DSO_REG_FIFO_CTRL3_BDR_GY_3333Hz |
+                                            LSM6DSO_REG_FIFO_CTRL3_BDR_XL_3333Hz);
     hal.scheduler->delay(1);
 
     // FIFO_CTRL4(0Ah) : 06h
@@ -264,8 +264,8 @@ void AP_InertialSensor_LSM6DSO::_gyro_init(gyro_scale scale)
                                          LSM6DSO_REG_CTRL7_G_OIS_ON_DISABLE);
     hal.scheduler->delay(1);
 
-    // CTRL2_G(11h) : 0111XXX0b
-    //      ODR  = 0111b (833Hz (high performance))
+    // CTRL2_G(11h) : 1001XXX0b
+    //      ODR  = 1001b (3.33KHz (high performance))
     uint8_t fs_g;
     switch (scale) {
     case G_SCALE_125DPS:
@@ -288,7 +288,7 @@ void AP_InertialSensor_LSM6DSO::_gyro_init(gyro_scale scale)
         break;
     }
 
-    _register_write(LSM6DSO_REG_CTRL2_G, LSM6DSO_REG_CTRL2_G_ODR_G_833Hz |
+    _register_write(LSM6DSO_REG_CTRL2_G, LSM6DSO_REG_CTRL2_G_ODR_G_HM_3330Hz |
                                          fs_g);
     hal.scheduler->delay(1);
 }
@@ -327,8 +327,8 @@ void AP_InertialSensor_LSM6DSO::_accel_init(accel_scale scale)
                                           LSM6DSO_REG_CTRL8_XL_DEN_I3C_DISABLE );
     hal.scheduler->delay(1);
 
-    // CTRL1_XL(10h) :  0111XX00b
-    //      ODR        = 0111b (833Hz (high performance))
+    // CTRL1_XL(10h) :  1001XX00b
+    //      ODR        = 1001b (3.33KHz (high performance))
     //      LPF2_XL_EN = 0b (LPF2 Disable)
     uint8_t fs_xl;
     switch (scale) {
@@ -349,7 +349,7 @@ void AP_InertialSensor_LSM6DSO::_accel_init(accel_scale scale)
         break;
     }
 
-    _register_write(LSM6DSO_REG_CTRL1_XL, LSM6DSO_REG_CTRL1_XL_ODR_XL_HM_833Hz |
+    _register_write(LSM6DSO_REG_CTRL1_XL, LSM6DSO_REG_CTRL1_XL_ODR_XL_HM_3330Hz |
                                           fs_xl |
                                           LSM6DSO_REG_CTRL1_XL_LPF2_XL_EN_DISABLE);
     hal.scheduler->delay(1);
