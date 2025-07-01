@@ -318,13 +318,13 @@ void AP_InertialSensor_LSM6DSO::_accel_init(accel_scale scale)
     //      DEN_XL_EN   = 0b (Extends DEN functionality to accelerometer sensor Disabled)
     //      DEN_LH      = 0b (active low)
     //      I3C_disable = 0b (MIPI I3C interfaces enabled)
-    _register_write(LSM6DSO_REG_CTRL9_XL, LSM6DSO_REG_CTRL8_XL_DEN_X_ENABLE |
-                                          LSM6DSO_REG_CTRL8_XL_DEN_Y_ENABLE |
-                                          LSM6DSO_REG_CTRL8_XL_DEN_Z_ENABLE |
+    _register_write(LSM6DSO_REG_CTRL9_XL, LSM6DSO_REG_CTRL9_XL_DEN_X_ENABLE |
+                                          LSM6DSO_REG_CTRL9_XL_DEN_Y_ENABLE |
+                                          LSM6DSO_REG_CTRL9_XL_DEN_Z_ENABLE |
                                           LSM6DSO_REG_CTRL9_XL_DEN_XL_G_GYRO |
                                           LSM6DSO_REG_CTRL9_XL_DEN_XL_EN_EXT_DISABLE |
                                           LSM6DSO_REG_CTRL9_XL_DEN_LH_ACTIVE_LOW |
-                                          LSM6DSO_REG_CTRL8_XL_DEN_I3C_DISABLE );
+                                          LSM6DSO_REG_CTRL9_XL_DEN_I3C_DISABLE );
     hal.scheduler->delay(1);
 
     // CTRL1_XL(10h) :  1001XX00b

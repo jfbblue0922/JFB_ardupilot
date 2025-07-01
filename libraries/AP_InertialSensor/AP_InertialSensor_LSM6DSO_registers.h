@@ -224,24 +224,24 @@
 #define LSM6DSO_REG_CTRL9_XL                            0x18
 // DEN_X
 #   define LSM6DSO_REG_CTRL9_XL_DEN_X_DISABLE           (0x0 << 7)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_X_ENABLE            (0x1 << 7)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_X_ENABLE            (0x1 << 7)
 // DEN_Y
 #   define LSM6DSO_REG_CTRL9_XL_DEN_Y_DISABLE           (0x0 << 6)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_Y_ENABLE            (0x1 << 6)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_Y_ENABLE            (0x1 << 6)
 // DEN_Z
 #   define LSM6DSO_REG_CTRL9_XL_DEN_Z_DISABLE           (0x0 << 5)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_Z_ENABLE            (0x1 << 5)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_Z_ENABLE            (0x1 << 5)
 // DEN_XL_G
 #   define LSM6DSO_REG_CTRL9_XL_DEN_XL_G_GYRO           (0x0 << 4)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_XL_G_ACCEL          (0x1 << 4)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_XL_G_ACCEL          (0x1 << 4)
 // DEN_XL_EN
 #   define LSM6DSO_REG_CTRL9_XL_DEN_XL_EN_EXT_DISABLE   (0x0 << 3)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_XL_EN_EXT_ENABLE    (0x1 << 3)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_XL_EN_EXT_ENABLE    (0x1 << 3)
 // DEN_LH
 #   define LSM6DSO_REG_CTRL9_XL_DEN_LH_ACTIVE_LOW       (0x0 << 2)
-#   define LSM6DSO_REG_CTRL8_XL_DEN_LH_ACTIVE_HIGH      (0x1 << 2)
+#   define LSM6DSO_REG_CTRL9_XL_DEN_LH_ACTIVE_HIGH      (0x1 << 2)
 // I3C_disable
-#   define LSM6DSO_REG_CTRL8_XL_DEN_I3C_DISABLE         (0x1 << 1)  // Disable is High
+#   define LSM6DSO_REG_CTRL9_XL_DEN_I3C_DISABLE         (0x1 << 1)  // Disable is High
 #   define LSM6DSO_REG_CTRL9_XL_DEN_I3C_ENABLE          (0x0 << 1)
 #define LSM6DSO_REG_CTRL10_C                            0x19
 #define LSM6DSO_REG_ALL_INT_SRC                         0x1A
