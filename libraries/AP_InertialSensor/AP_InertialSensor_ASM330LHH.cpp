@@ -230,11 +230,11 @@ void AP_InertialSensor_ASM330LHH::_fifo_init()
     _register_write(ASM330LHH_REG_FIFO_CTRL2, 0x00);
     hal.scheduler->delay(1);
 
-    // FIFO_CTRL3(09h) : 77h
-    //      BDR_GY = 0111b (833Hz)
-    //      BDR_XL = 0111b (833Hz)
-    _register_write(ASM330LHH_REG_FIFO_CTRL3, ASM330LHH_REG_FIFO_CTRL3_BDR_GY_833Hz |
-                                              ASM330LHH_REG_FIFO_CTRL3_BDR_XL_833Hz);
+    // FIFO_CTRL3(09h) : 99h
+    //      BDR_GY = 1001b (3333Hz)
+    //      BDR_XL = 1001b (3333Hz)
+    _register_write(ASM330LHH_REG_FIFO_CTRL3, ASM330LHH_REG_FIFO_CTRL3_BDR_GY_3333Hz |
+                                              ASM330LHH_REG_FIFO_CTRL3_BDR_XL_3333Hz);
     hal.scheduler->delay(1);
 
     // FIFO_CTRL4(0Ah) : 06h
@@ -258,8 +258,8 @@ void AP_InertialSensor_ASM330LHH::_gyro_init(gyro_scale scale)
                                            ASM330LHH_REG_CTRL7_G_USR_OFF_ON_OUT_BYPASS);
     hal.scheduler->delay(1);
 
-    // CTRL2_G(11h) : 0111XXX0b
-    //      ODR  = 0111b (833Hz (high performance))
+    // CTRL2_G(11h) : 1001XXX0b
+    //      ODR  = 1001b (3333Hz (high performance))
     uint8_t fs_g;
     switch (scale) {
     case G_SCALE_125DPS:
@@ -282,8 +282,8 @@ void AP_InertialSensor_ASM330LHH::_gyro_init(gyro_scale scale)
         break;
     }
 
-    _register_write(ASM330LHH_REG_CTRL2_G, ASM330LHH_REG_CTRL2_G_ODR_G_833Hz |
-                                         fs_g);
+    _register_write(ASM330LHH_REG_CTRL2_G, ASM330LHH_REG_CTRL2_G_ODR_G_3333Hz |
+                                           fs_g);
     hal.scheduler->delay(1);
 }
 
@@ -309,16 +309,16 @@ void AP_InertialSensor_ASM330LHH::_accel_init(accel_scale scale)
     //      DEN_XL_G    = 0b (DEN pin info stamped in the gyroscope axis)
     //      DEN_XL_EN   = 0b (Extends DEN functionality to accelerometer sensor Disabled)
     //      DEN_LH      = 0b (active low)
-    _register_write(ASM330LHH_REG_CTRL9_XL, ASM330LHH_REG_CTRL8_XL_DEN_X_ENABLE |
-                                            ASM330LHH_REG_CTRL8_XL_DEN_Y_ENABLE |
-                                            ASM330LHH_REG_CTRL8_XL_DEN_Z_ENABLE |
+    _register_write(ASM330LHH_REG_CTRL9_XL, ASM330LHH_REG_CTRL9_XL_DEN_X_ENABLE |
+                                            ASM330LHH_REG_CTRL9_XL_DEN_Y_ENABLE |
+                                            ASM330LHH_REG_CTRL9_XL_DEN_Z_ENABLE |
                                             ASM330LHH_REG_CTRL9_XL_DEN_XL_G_GYRO |
                                             ASM330LHH_REG_CTRL9_XL_DEN_XL_EN_EXT_DISABLE |
                                             ASM330LHH_REG_CTRL9_XL_DEN_LH_ACTIVE_LOW);
     hal.scheduler->delay(1);
 
-    // CTRL1_XL(10h) :  0111XX00b
-    //      ODR        = 0111b (833Hz (high performance))
+    // CTRL1_XL(10h) :  1001XX00b
+    //      ODR        = 1001b (3333Hz (high performance))
     //      LPF2_XL_EN = 0b (LPF2 Disable)
     uint8_t fs_xl;
     switch (scale) {
@@ -339,7 +339,7 @@ void AP_InertialSensor_ASM330LHH::_accel_init(accel_scale scale)
         break;
     }
 
-    _register_write(ASM330LHH_REG_CTRL1_XL, ASM330LHH_REG_CTRL1_XL_ODR_XL_833Hz |
+    _register_write(ASM330LHH_REG_CTRL1_XL, ASM330LHH_REG_CTRL1_XL_ODR_XL_3333Hz |
                                             fs_xl |
                                             ASM330LHH_REG_CTRL1_XL_LPF2_XL_EN_DISABLE);
     hal.scheduler->delay(1);
