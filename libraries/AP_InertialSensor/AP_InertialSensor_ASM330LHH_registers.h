@@ -14,9 +14,9 @@
 #define ODR_208Hz          (0x5 << 4)
 #define ODR_416Hz          (0x6 << 4)
 #define ODR_833Hz          (0x7 << 4)
-#define ODR_1660Hz         (0x8 << 4)
-#define ODR_3330Hz         (0x9 << 4)
-#define ODR_6660Hz         (0xA << 4)
+#define ODR_1666Hz         (0x8 << 4)
+#define ODR_3333Hz         (0x9 << 4)
+#define ODR_6667Hz         (0xA << 4)
 
 /*
  *  Accelerometer and Gyroscope registers
@@ -90,9 +90,9 @@
 #   define ASM330LHH_REG_CTRL1_XL_ODR_XL_208Hz              ODR_208Hz
 #   define ASM330LHH_REG_CTRL1_XL_ODR_XL_416Hz              ODR_416Hz
 #   define ASM330LHH_REG_CTRL1_XL_ODR_XL_833Hz              ODR_833Hz
-#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_1660Hz             ODR_1660Hz
-#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_3330Hz             ODR_3330Hz
-#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_6660Hz             ODR_6660Hz
+#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_1667Hz             ODR_1667Hz
+#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_3333Hz             ODR_3333Hz
+#   define ASM330LHH_REG_CTRL1_XL_ODR_XL_6667Hz             ODR_6667Hz
 // FS1_XL/FS2_XL
 #   define ASM330LHH_REG_CTRL1_XL_FS_XL_2G                  (0x0 << 2)
 #   define ASM330LHH_REG_CTRL1_XL_FS_XL_4G                  (0x2 << 2)
@@ -112,16 +112,16 @@
 #   define ASM330LHH_REG_CTRL2_G_ODR_G_208Hz                ODR_208Hz
 #   define ASM330LHH_REG_CTRL2_G_ODR_G_416Hz                ODR_416Hz
 #   define ASM330LHH_REG_CTRL2_G_ODR_G_833Hz                ODR_833Hz
-#   define ASM330LHH_REG_CTRL2_G_ODR_G_1660Hz               ODR_1660Hz
-#   define ASM330LHH_REG_CTRL2_G_ODR_G_3330Hz               ODR_3330Hz
-#   define ASM330LHH_REG_CTRL2_G_ODR_G_6660Hz               ODR_6660Hz
+#   define ASM330LHH_REG_CTRL2_G_ODR_G_1667Hz               ODR_1667Hz
+#   define ASM330LHH_REG_CTRL2_G_ODR_G_3333Hz               ODR_3333Hz
+#   define ASM330LHH_REG_CTRL2_G_ODR_G_6667Hz               ODR_6667Hz
 // FS1_G/FS2_G & FS_125
-#   define ASM330LHH_REG_CTRL2_G_FS_G_125PS                 (0x1 << 1)    // 0010b
-#   define ASM330LHH_REG_CTRL2_G_FS_G_250DPS                (0x0 << 1)    // 0000b
-#   define ASM330LHH_REG_CTRL2_G_FS_G_500DPS                (0x2 << 1)    // 0100b
-#   define ASM330LHH_REG_CTRL2_G_FS_G_1000DPS               (0x4 << 1)    // 1000b
-#   define ASM330LHH_REG_CTRL2_G_FS_G_2000DPS               (0x6 << 1)    // 1100b
-#   define ASM330LHH_REG_CTRL2_G_FS_G_4000DPS               (0x1)         // 0001b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_125PS                 (0x1)   // 0010b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_250DPS                (0x0)   // 0000b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_500DPS                (0x4)   // 0100b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_1000DPS               (0x8)   // 1000b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_2000DPS               (0xC)   // 1100b
+#   define ASM330LHH_REG_CTRL2_G_FS_G_4000DPS               (0x1)   // 0001b
 
 #define ASM330LHH_REG_CTRL3_C                               0x12
 // BOOT
@@ -188,22 +188,22 @@
 #define ASM330LHH_REG_CTRL9_XL                              0x18
 // DEN_X
 #   define ASM330LHH_REG_CTRL9_XL_DEN_X_DISABLE             (0x0 << 7)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_X_ENABLE              (0x1 << 7)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_X_ENABLE              (0x1 << 7)
 // DEN_Y
 #   define ASM330LHH_REG_CTRL9_XL_DEN_Y_DISABLE             (0x0 << 6)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_Y_ENABLE              (0x1 << 6)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_Y_ENABLE              (0x1 << 6)
 // DEN_Z
 #   define ASM330LHH_REG_CTRL9_XL_DEN_Z_DISABLE             (0x0 << 5)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_Z_ENABLE              (0x1 << 5)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_Z_ENABLE              (0x1 << 5)
 // DEN_XL_G
 #   define ASM330LHH_REG_CTRL9_XL_DEN_XL_G_GYRO             (0x0 << 4)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_XL_G_ACCEL            (0x1 << 4)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_XL_G_ACCEL            (0x1 << 4)
 // DEN_XL_EN
 #   define ASM330LHH_REG_CTRL9_XL_DEN_XL_EN_EXT_DISABLE     (0x0 << 3)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_XL_EN_EXT_ENABLE      (0x1 << 3)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_XL_EN_EXT_ENABLE      (0x1 << 3)
 // DEN_LH
 #   define ASM330LHH_REG_CTRL9_XL_DEN_LH_ACTIVE_LOW         (0x0 << 2)
-#   define ASM330LHH_REG_CTRL8_XL_DEN_LH_ACTIVE_HIGH        (0x1 << 2)
+#   define ASM330LHH_REG_CTRL9_XL_DEN_LH_ACTIVE_HIGH        (0x1 << 2)
 #define ASM330LHH_REG_CTRL10_C                              0x19
 #define ASM330LHH_REG_ALL_INT_SRC                           0x1A
 #define ASM330LHH_REG_WAKE_UP_SRC                           0x1B
