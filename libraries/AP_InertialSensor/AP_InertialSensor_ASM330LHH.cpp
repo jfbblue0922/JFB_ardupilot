@@ -21,6 +21,7 @@ AP_InertialSensor_ASM330LHH::AP_InertialSensor_ASM330LHH(AP_InertialSensor &imu,
     : AP_InertialSensor_Backend(imu)
     , _dev(std::move(dev))
     , _rotation(rotation)
+    , _temp_filter(1000, 1)
 {
     _temp_degc = 0.0F;
 }
@@ -118,17 +119,13 @@ fail_whoami:
  */
 void AP_InertialSensor_ASM330LHH::start(void)
 {
-    if (!_imu.register_gyro(gyro_instance, 833, _dev->get_bus_id_devtype(DEVTYPE_INS_ASM330LHH)) ||
-        !_imu.register_accel(accel_instance, 833, _dev->get_bus_id_devtype(DEVTYPE_INS_ASM330LHH))) {
+    if (!_imu.register_gyro(gyro_instance, 3333, _dev->get_bus_id_devtype(DEVTYPE_INS_ASM330LHH)) ||
+        !_imu.register_accel(accel_instance, 3333, _dev->get_bus_id_devtype(DEVTYPE_INS_ASM330LHH))) {
         return;
     }
 
     set_accel_orientation(accel_instance, _rotation);
     set_gyro_orientation(gyro_instance, _rotation);
-
-    // ■ 加速度キャリブレーション時に使用する最大絶対オフセットらしい
-    // ■ 後で考える。使用箇所不明・・・。
-    // _set_accel_max_abs_offset(accel_instance, 5.0f);
 
     _fifo_reset();
 
@@ -239,10 +236,10 @@ void AP_InertialSensor_ASM330LHH::_fifo_init()
 
     // FIFO_CTRL4(0Ah) : 06h
     //      DEC_TS_BATCH = 00b (timestamp not batched)
-    //      ODR_T_BATCH  = 11b (temperature 52Hz)
+    //      ODR_T_BATCH  = 00b (temperature not batched)
     //      FIFO_MODE    = 110b (Continuous mode)
     _register_write(ASM330LHH_REG_FIFO_CTRL4, ASM330LHH_REG_FIFO_CTRL4_DEC_TS_BATCH_NOT_BATCH |
-                                              ASM330LHH_REG_FIFO_CTRL4_DEC_ODR_T_BATCH_52Hz |
+                                              ASM330LHH_REG_FIFO_CTRL4_ODR_T_BATCH_NOT_BATCH |
                                               ASM330LHH_REG_FIFO_CTRL4_FIFO_MODE_CONT);
     hal.scheduler->delay(1);
 }
@@ -429,10 +426,10 @@ void AP_InertialSensor_ASM330LHH::_poll_data()
 {
     const uint16_t samples = _get_count_fifo_unread_data();
     for (uint16_t i = 0; i < samples; i++) {
-        const uint8_t _reg = ASM330LHH_REG_FIFO_DATA_OUT_TAG | 0x80;
+        const uint8_t fifo_reg = ASM330LHH_REG_FIFO_DATA_OUT_TAG | 0x80;
         uint8_t fifo_tmp[7] = {0, 0, 0, 0, 0, 0, 0};
 
-        if (!_dev->transfer(&_reg, 1, (uint8_t *)&fifo_tmp, sizeof(fifo_tmp))) {
+        if (!_dev->transfer(&fifo_reg, 1, (uint8_t *)&fifo_tmp, sizeof(fifo_tmp))) {
             DEV_PRINTF("ASM330LHH: error reading fifo data\n");
             return;
         }
@@ -452,15 +449,21 @@ void AP_InertialSensor_ASM330LHH::_poll_data()
         case 0x02:
             _update_transaction_x(raw_data);
             break;
-        case 0x03:
-            _temp_degc = (float)raw_data.x / 256.0F + 25.0;
-            break;
         default:
             // unused fifo data
             ;
             break;
         }
     }
+
+    const uint8_t temp_reg = ASM330LHH_REG_OUT_TEMP_L | 0x80;
+    int16_t temp_tmp;
+    if (_dev->transfer(&temp_reg, 1, (uint8_t *)&temp_tmp, sizeof(temp_tmp))) {
+        _temp_degc = _temp_filter.apply((float)temp_tmp / 256.0f + 25.0f);
+    } else {
+        DEV_PRINTF("ASM330LHH: error reading temp data\n");
+    }
+
 
     // check next register value for correctness
     AP_HAL::Device::checkreg reg;
