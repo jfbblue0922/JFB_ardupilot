@@ -82,5 +82,5 @@ private:
     enum Rotation _rotation;
 
     float _temp_degc;
-
+    LowPassFilter2pFloat _temp_filter;
 };
