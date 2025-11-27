@@ -6,7 +6,7 @@ The JFB-200-EM flight controller of [JAE](https://www.jae.com/Motion_Sensor_Cont
 
  - STM32H755 microcontroller
  - Two IMUs: ICM45686 and ICM42688 SPI IMU
- - Three BAROs: BMP390 and two SPI barometers
+ - Three BAROs: BMP390, ICP-20100 and MS55611 SPI barometers
  - builtin I2C IST8310 and BMM350 magnetometer
  - microSD card slot
  - 6 UARTs plus USB, RCIN, SBUS_OUT
