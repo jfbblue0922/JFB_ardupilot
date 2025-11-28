@@ -1,12 +1,12 @@
 # JFB-200-EM Flight Controller
 
-The JFB-200-EM flight controller is sold by [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
+The JFB-200-EM flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
 
 ## Features
 
  - STM32H755 microcontroller
  - Two IMUs: ICM45686 and ICM42688 SPI IMU
- - Three BAROs: BMP390 and two SPI barometers
+ - Three BAROs: BMP390, ICP-20100 and MS55611 SPI barometers
  - builtin I2C IST8310 and BMM350 magnetometer
  - microSD card slot
  - 6 UARTs plus USB, RCIN, SBUS_OUT
@@ -68,7 +68,7 @@ Recomended input voltage is 4.9 to 5.5 volt.
 
 ## Compass
 
-The JFB-200 has a builtin two IST8310 compasses. Due to potential
+The JFB-200 has two builtin compasses IST8310 and BMM350. Due to potential
 interference the board is usually used with an external I2C compass as
 part of a GPS/Compass combination.
 
@@ -103,7 +103,7 @@ The JFB-200 has 9 analog inputs
  - ADC  Pin5  -> not used
  - ADC1 Pin6  -> Battery Current Sensor 2
  - ADC  Pin7  -> not used
- - ADC3 Pin8  -> ADC SPARE 1 (6.6V) Battery Voltage
+ - ADC3 Pin8  -> ADC SPARE 1 (6.6V)
  - ADC  Pin9  -> not used
  - ADC1 Pin10 -> RSSI voltage monitoring
  - ADC  Pin11 -> not used
