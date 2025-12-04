@@ -28,6 +28,7 @@ mcu = {
     # flags of 1 means DMA-capable (DMA and BDMA)
     # flags of 2 means faster memory for CPU intensive work
     # flags of 4 means memory can be used for SDMMC DMA
+    # flags of 8 means memory can be used for ethernet DMA
     'RAM_MAP' : [
         (0x30000000, 256, 8), # SRAM1, SRAM2
         (0x20000000, 128, 2), # DTCM, tightly coupled, no DMA, fast
