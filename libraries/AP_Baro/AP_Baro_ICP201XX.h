@@ -13,10 +13,10 @@ class AP_Baro_ICP201XX : public AP_Baro_Backend
 public:
     void update() override;
 
-    static AP_Baro_Backend *probe(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> dev);
+    static AP_Baro_Backend *probe(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev);
 
 private:
-    AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> dev);
+    AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev);
 
     bool init();
     void dummy_reg();
@@ -35,9 +35,7 @@ private:
 
     uint8_t instance;
 
-    AP_HAL::OwnPtr<AP_HAL::Device> dev;
-
-    bool spi;
+    AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev;
 
     // accumulation structure, protected by _sem
     struct {

@@ -16,7 +16,7 @@
 #if AP_BARO_ICP201XX_ENABLED
 
 #include <AP_HAL/AP_HAL.h>
-#include <AP_HAL/Device.h>
+#include <AP_HAL/I2CDevice.h>
 #include <utility>
 
 #include <AP_Common/AP_Common.h>
@@ -75,19 +75,14 @@ extern const AP_HAL::HAL &hal;
 /*
   constructor
  */
-AP_Baro_ICP201XX::AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> _dev)
+AP_Baro_ICP201XX::AP_Baro_ICP201XX(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::I2CDevice> _dev)
     : AP_Baro_Backend(baro)
     , dev(std::move(_dev))
 {
-    if (dev->bus_type() == AP_HAL::Device::BUS_TYPE_SPI) {
-        spi = true;
-    } else {
-        spi = false;
-    }
 }
 
 AP_Baro_Backend *AP_Baro_ICP201XX::probe(AP_Baro &baro,
-                                         AP_HAL::OwnPtr<AP_HAL::Device> dev)
+                                         AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev)
 {
     if (!dev) {
         return nullptr;
@@ -166,15 +161,8 @@ void AP_Baro_ICP201XX::dummy_reg()
 bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *buf, uint8_t len)
 {
     bool ret;
-
-    if (spi) {
-        uint8_t data[2] = { 0x3C, reg };
-        ret = dev->transfer(data, sizeof(data), buf, len);
-    } else {
-        ret = dev->transfer(&reg, 1, buf, len);
-        dummy_reg();
-    }
-
+    ret = dev->transfer(&reg, 1, buf, len);
+    dummy_reg();
     return ret;
 }
 
@@ -186,15 +174,9 @@ bool AP_Baro_ICP201XX::read_reg(uint8_t reg, uint8_t *val)
 bool AP_Baro_ICP201XX::write_reg(uint8_t reg, uint8_t val)
 {
     bool ret;
-
-    if (spi) {
-        uint8_t data[3] = { 0x33, reg, val };
-        ret = dev->transfer(data, sizeof(data), nullptr, 0);
-    } else {
-        uint8_t data[2] = { reg, val };
-        ret = dev->transfer(data, sizeof(data), nullptr, 0);
-        dummy_reg();
-    }
+    uint8_t data[2] = { reg, val };
+    ret = dev->transfer(data, sizeof(data), nullptr, 0);
+    dummy_reg();
     return ret;
 }
 
