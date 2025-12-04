@@ -33,8 +33,6 @@ extern const AP_HAL::HAL& hal;
 #define GYRO_SAMPLE_RATE    3333    // 3333Hz
 #define ACCEL_SAMPLE_RATE   3333    // 3333Hz
 
-#define DATA_POLLING_RATE   1000    // 1000Hz
-
 AP_InertialSensor_ASM330::AP_InertialSensor_ASM330(AP_InertialSensor &imu,
                                                    AP_HAL::OwnPtr<AP_HAL::Device> device,
                                                    enum Rotation rotation)
@@ -67,7 +65,7 @@ bool AP_InertialSensor_ASM330::init_sensor()
 {
     bool success = hardware_init();
 
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
     dump_registers();
 #endif
     return success;
@@ -85,6 +83,9 @@ bool AP_InertialSensor_ASM330::hardware_init()
         DEV_PRINTF("ASM330: unexpected acc/gyro WHOAMI 0x%x\n", whoami);
         return false;
     }
+
+    // setup for register checking
+    dev->setup_checked_registers(14, 20);
 
     dev->set_speed(AP_HAL::Device::SPEED_LOW);
 
@@ -104,7 +105,7 @@ bool AP_InertialSensor_ASM330::hardware_init()
                 break;
             }
 
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
             dump_registers();
 #endif
         }
@@ -136,8 +137,7 @@ void AP_InertialSensor_ASM330::start(void)
     fifo_reset();
 
     // start the timer process to read samples
-    const uint32_t backend_period_us = 1000000UL / DATA_POLLING_RATE;
-    dev->register_periodic_callback(backend_period_us, FUNCTOR_BIND_MEMBER(&AP_InertialSensor_ASM330::poll_data, void));
+    dev->register_periodic_callback(1000, FUNCTOR_BIND_MEMBER(&AP_InertialSensor_ASM330::poll_data, void));
 }
 
 uint8_t AP_InertialSensor_ASM330::register_read(uint8_t reg)
@@ -176,10 +176,10 @@ void AP_InertialSensor_ASM330::fifo_reset()
 
     // FIFO_MODE is Bypass mode
     register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4 |
-                                           ASM330_REG_FIFO_CTRL4_FIFO_MODE_BYPASS, true);
+                                           ASM330_REG_FIFO_CTRL4_FIFO_MODE_BYPASS);
 
     // Revert FIFO_MODE
-    register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4, true);
+    register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4);
 
     notify_accel_fifo_reset(accel_instance);
     notify_gyro_fifo_reset(gyro_instance);
@@ -390,19 +390,7 @@ bool AP_InertialSensor_ASM330::update()
     return true;
 }
 
-/*
- *  get a startup banner to output to the GCS
- */
-bool AP_InertialSensor_ASM330::get_output_banner(char* banner, uint8_t banner_len)
-{
-    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "IMU%u: sampling %.1fkHz/%.1fkHz",
-                  gyro_instance,
-                  DATA_POLLING_RATE * 0.001,
-                  GYRO_SAMPLE_RATE * 0.001);
-    return true;
-}
-
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
 /*
  *  dump all config registers - used for debug
 */

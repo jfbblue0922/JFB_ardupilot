@@ -7,7 +7,7 @@
 #include "AP_InertialSensor_Backend.h"
 
 /* enable debug to see a register dump on startup */
-#define AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED 0
+#define AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED 0
 
 class AP_InertialSensor_ASM330 : public AP_InertialSensor_Backend
 {
@@ -15,9 +15,6 @@ public:
     virtual ~AP_InertialSensor_ASM330() { }
     void start(void) override;
     bool update() override;
-
-    /* get a startup banner to output to the GCS */
-    bool get_output_banner(char* banner, uint8_t banner_len) override;
 
     static AP_InertialSensor_Backend *probe(AP_InertialSensor &imu,
                                             AP_HAL::OwnPtr<AP_HAL::Device> dev,
@@ -56,7 +53,7 @@ private:
     void update_transaction_g(struct sensor_raw_data raw_data);
     void update_transaction_x(struct sensor_raw_data raw_data);
 
-    #if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+    #if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
     void dump_registers();
     #endif
 
