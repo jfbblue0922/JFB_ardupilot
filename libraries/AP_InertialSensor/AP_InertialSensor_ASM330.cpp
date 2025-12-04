@@ -64,7 +64,7 @@ bool AP_InertialSensor_ASM330::init_sensor()
 {
     bool success = hardware_init();
 
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
     dump_registers();
 #endif
     return success;
@@ -82,6 +82,9 @@ bool AP_InertialSensor_ASM330::hardware_init()
         DEV_PRINTF("ASM330: unexpected acc/gyro WHOAMI 0x%x\n", whoami);
         return false;
     }
+
+    // setup for register checking
+    dev->setup_checked_registers(14, 20);
 
     dev->set_speed(AP_HAL::Device::SPEED_LOW);
 
@@ -101,7 +104,7 @@ bool AP_InertialSensor_ASM330::hardware_init()
                 break;
             }
 
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
             dump_registers();
 #endif
         }
@@ -172,10 +175,10 @@ void AP_InertialSensor_ASM330::fifo_reset()
 
     // FIFO_MODE is Bypass mode
     register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4 |
-                                           ASM330_REG_FIFO_CTRL4_FIFO_MODE_BYPASS, true);
+                                           ASM330_REG_FIFO_CTRL4_FIFO_MODE_BYPASS);
 
     // Revert FIFO_MODE
-    register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4, true);
+    register_write(ASM330_REG_FIFO_CTRL4, fifo_ctrl4);
 
     notify_accel_fifo_reset(accel_instance);
     notify_gyro_fifo_reset(gyro_instance);
@@ -386,7 +389,7 @@ bool AP_InertialSensor_ASM330::update()
     return true;
 }
 
-#if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+#if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
 /*
  *  dump all config registers - used for debug
 */

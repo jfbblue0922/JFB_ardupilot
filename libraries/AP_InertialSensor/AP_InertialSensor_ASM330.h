@@ -7,7 +7,7 @@
 #include "AP_InertialSensor_Backend.h"
 
 /* enable debug to see a register dump on startup */
-#define AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED 0
+#define AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED 0
 
 class AP_InertialSensor_ASM330 : public AP_InertialSensor_Backend
 {
@@ -53,7 +53,7 @@ private:
     void update_transaction_g(struct sensor_raw_data raw_data);
     void update_transaction_x(struct sensor_raw_data raw_data);
 
-    #if AP_INERTIALSENSOR_AMS330_DEBUG_ENABLED
+    #if AP_INERTIALSENSOR_ASM330_DEBUG_ENABLED
     void dump_registers();
     #endif
 
