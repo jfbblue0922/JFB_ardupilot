@@ -116,7 +116,7 @@
 #   define ASM330_REG_CTRL2_G_ODR_G_3333Hz                  ODR_3333Hz
 #   define ASM330_REG_CTRL2_G_ODR_G_6667Hz                  ODR_6667Hz
 // FS1_G/FS2_G & FS_125
-#   define ASM330_REG_CTRL2_G_FS_G_125PS                    (0x1)   // 0010b
+#   define ASM330_REG_CTRL2_G_FS_G_125DPS                   (0x2)   // 0010b
 #   define ASM330_REG_CTRL2_G_FS_G_250DPS                   (0x0)   // 0000b
 #   define ASM330_REG_CTRL2_G_FS_G_500DPS                   (0x4)   // 0100b
 #   define ASM330_REG_CTRL2_G_FS_G_1000DPS                  (0x8)   // 1000b
