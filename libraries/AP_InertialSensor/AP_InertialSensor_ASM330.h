@@ -16,6 +16,9 @@ public:
     void start(void) override;
     bool update() override;
 
+    /* get a startup banner to output to the GCS */
+    bool get_output_banner(char* banner, uint8_t banner_len) override;
+
     static AP_InertialSensor_Backend *probe(AP_InertialSensor &imu,
                                             AP_HAL::OwnPtr<AP_HAL::Device> dev,
                                             enum Rotation rotation);

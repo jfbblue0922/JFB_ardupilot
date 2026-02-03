@@ -26,11 +26,14 @@
 #include <utility>
 
 #include <AP_HAL/GPIO.h>
+#include <GCS_MAVLink/GCS.h>
 
 extern const AP_HAL::HAL& hal;
 
 #define GYRO_SAMPLE_RATE    3333    // 3333Hz
 #define ACCEL_SAMPLE_RATE   3333    // 3333Hz
+
+#define DATA_POLLING_RATE   1000    // 1000Hz
 
 AP_InertialSensor_ASM330::AP_InertialSensor_ASM330(AP_InertialSensor &imu,
                                                    AP_HAL::OwnPtr<AP_HAL::Device> device,
@@ -133,7 +136,8 @@ void AP_InertialSensor_ASM330::start(void)
     fifo_reset();
 
     // start the timer process to read samples
-    dev->register_periodic_callback(1000, FUNCTOR_BIND_MEMBER(&AP_InertialSensor_ASM330::poll_data, void));
+    const uint32_t backend_period_us = 1000000UL / DATA_POLLING_RATE;
+    dev->register_periodic_callback(backend_period_us, FUNCTOR_BIND_MEMBER(&AP_InertialSensor_ASM330::poll_data, void));
 }
 
 uint8_t AP_InertialSensor_ASM330::register_read(uint8_t reg)
@@ -383,6 +387,18 @@ bool AP_InertialSensor_ASM330::update()
     update_accel(accel_instance);
 
     _publish_temperature(accel_instance, temperature_degc);
+    return true;
+}
+
+/*
+ *  get a startup banner to output to the GCS
+ */
+bool AP_InertialSensor_ASM330::get_output_banner(char* banner, uint8_t banner_len)
+{
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "IMU%u: sampling %.1fkHz/%.1fkHz",
+                  gyro_instance,
+                  DATA_POLLING_RATE * 0.001,
+                  GYRO_SAMPLE_RATE * 0.001);
     return true;
 }
 
