@@ -5,36 +5,33 @@ The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control
 ## Features
 
  - STM32H755 microcontroller
- - Three IMUs: ICM45686, ASM330 and ICM42688 SPI IMU
- - Three BAROs: two BMP390 and one MS5611 SPI barometer
- - builtin I2C BMM350 and IST8310 magnetometer
+ - Three IMUs: ICM45686, ASM330 and IIM42653 SPI IMU
+ - Two BAROs: two BMP390 SPI barometer
+ - Two Mags: builtin I2C BMM350 and IST8310 magnetometer
  - microSD card slot
- - 6 UARTs plus USB, RCIN, SBUS_OUT
- - 16 PWM outputs
- - Four I2C and two CAN ports
- - External Buzzer (Open/Drain and 27V Out)
+ - 6 UARTs plus USB (including GPS, RCIN and SBUS_OUT)
+ - 16 PWM outputs (8 PWM shares GPIO)
+ - Three I2C and two CAN ports
+ - Two external Buzzer (Open/Drain and 27V Out)
  - external safety Switch
  - voltage monitoring for servo rail and Vcc
  - two dedicated power input ports for external power bricks
+ - Ethernet port
 
 ## UART Mapping
 
  - SERIAL0 -> USB
  - SERIAL1 -> UART7  (Telem1)
  - SERIAL2 -> UART5  (Telem2)
- - SERIAL3 -> USART2 (Telem3)
- - SERIAL4 -> USART1 (GPS)
- - SERIAL5 -> UART4  (GPS2, marked UART/I2CB)
+ - SERIAL3 -> USART3 (Telem3)
+ - SERIAL4 -> USART1 (GPS1)
+ - SERIAL5 -> USART2 (GPS2)
  - SERIAL6 -> UART8  (RCIN)
- - SERIAL7 -> USART6 (SBUS_OUT)
- - SERIAL8 -> USART3 (debug)
- - SERIAL9 -> USB    (Telem4)
+ - SERIAL7 -> USART6 (SBUSOUT)
+ - SERIAL8 -> USB
 
-The Telem1 and Telem2 ports have RTS/CTS pins, the other UARTs do not
+The Telem1, Telem2 and Telem3 ports have RTS/CTS pins, the other UARTs do not
 have RTS/CTS.
-
-The USART3 connector is labelled debug, but is available as a general
-purpose UART with ArduPilot.
 
 ## RC Input
  
@@ -61,9 +58,9 @@ to use DShot.
 
 ## Battery Monitoring
 
-The board has two dedicated power monitor ports on 8 pin
-connectors. The correct battery setting parameters are dependent on
-the type of power brick which is connected.
+The board has two dedicated power monitor ports on 8 pin connectors.
+The correct battery setting parameters are dependent on the type of 
+power brick which is connected.
 Recomended input voltage is 4.9 to 5.5 volt.
 
 ## Compass
@@ -95,26 +92,26 @@ The numbering of the GPIOs for PIN variables in ArduPilot is:
 ## Analog inputs
 
 The JFB-200 has 9 analog inputs
- - ADC  Pin0  -> not used
- - ADC  Pin1  -> not used
- - ADC1 Pin2  -> +3.3V Sensor
- - ADC  Pin3  -> not used
- - ADC3 Pin4  -> Battery Voltage 2
- - ADC  Pin5  -> not used
- - ADC1 Pin6  -> Battery Current Sensor 2
- - ADC  Pin7  -> not used
- - ADC3 Pin8  -> ADC SPARE 1 (6.6V)
- - ADC  Pin9  -> not used
- - ADC1 Pin10 -> RSSI voltage monitoring
- - ADC  Pin11 -> not used
- - ADC  Pin12 -> not used
- - ADC1 Pin13 -> ADC SPARE (3.3V)
- - ADC3 Pin14 -> SERVORAIL sens
- - ADC3 Pin15 -> 5V sens
- - ADC1 Pin16 -> Battery Voltage
- - ADC  Pin17 -> not used
- - ADC1 Pin18 -> Battery Current Sensor
- - ADC  Pin19 -> not used
+ - ADC Pin0  -> not used
+ - ADC Pin1  -> not used
+ - ADC Pin2  -> +3.3V Sens
+ - ADC Pin3  -> not used
+ - ADC Pin4  -> Battery Voltage 2
+ - ADC Pin5  -> not used
+ - ADC Pin6  -> Battery Current Sensor 2
+ - ADC Pin7  -> not used
+ - ADC Pin8  -> ADC SPARE 1 (6.6V)
+ - ADC Pin9  -> not used
+ - ADC Pin10 -> RSSI voltage monitoring
+ - ADC Pin11 -> not used
+ - ADC Pin12 -> not used
+ - ADC Pin13 -> ADC SPARE 2 (3.3V)
+ - ADC Pin14 -> SERVORAIL sens
+ - ADC Pin15 -> 5V sens
+ - ADC Pin16 -> Battery Voltage
+ - ADC Pin17 -> not used
+ - ADC Pin18 -> Battery Current Sensor
+ - ADC Pin19 -> not used
 
 ## I2C Buses
 
@@ -127,7 +124,14 @@ I2C 3 is for internal only.
 
 ## CAN
 
-The JFB-200 has two independent CAN buses, with the following pinouts.
+The JFB-200 has two independent CAN buses with terminating resistors.
+
+## Dedicated Signal input/output
+
+The JFB-200 has the following dedicated discrete signals
+ - ARMED status signal output
+ - Hardware WDT Fail signal output
+ - HW reset signal input
 
 ## Debug
 
@@ -138,3 +142,4 @@ The JFB-200 supports SWD debugging on the debug port
 The board comes pre-installed with an ArduPilot compatible bootloader,
 allowing the loading of *.apj firmware files with any ArduPilot
 compatible ground station.
+The JFB-200 can be booted into DFU mode using a dedicated adapter.
