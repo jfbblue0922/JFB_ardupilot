@@ -22,9 +22,6 @@ FLASH_RESERVE_START_KB 0
 ## with 2M flash we can afford to optimize for speed
 FLASH_SIZE_KB 2048
 
-## Starage size
-HAL_STORAGE_SIZE 32768
-
 ## USB setup
 #USB_VENDOR  0x0A8E  # JAE
 #USB_PRODUCT 0x8888  # This is temp Number
@@ -155,7 +152,7 @@ PI5  PWMOUT13 OUTPUT LOW
 PI6  PWMOUT14 OUTPUT LOW
 PI7  PWMOUT15 OUTPUT LOW
 PI2  PWMOUT16 OUTPUT LOW
-PK2  PWM_OEn                  OUTPUT HIGH
+PK2  PWM_OE                   OUTPUT HIGH
 PJ6  PWM_VOLTAGE_SEL_5V_3Vn   OUTPUT LOW
 ]
 ## CAN bus
@@ -183,7 +180,6 @@ define HAL_LED_ON 0
 
 ## enable DFU by default
 #ENABLE_DFU_BOOT 1
-
 
 ## Ethernet
 PH2 GPIO_ETH_ENABLE OUTPUT LOW SPEED_VERYLOW  # ETH_RMII_POWER_EN
