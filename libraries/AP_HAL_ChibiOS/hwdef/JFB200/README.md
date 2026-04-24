@@ -153,11 +153,11 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 ### AUX port
 
 | Pin | Signal | Volt | Remarks |
-| --- | --- | --- |
-| 1 | ARMEDn | +3.3V |
-| 2 | WDT_FAILn | +3.3V  |
-| 3 | EXT_RESETn | +3.3V  |
-| 4 | SHEILD | GND |
+| --- | --- | --- | |
+| 1 | ARMEDn | +3.3V | |
+| 2 | WDT_FAILn | +3.3V  | |
+| 3 | EXT_RESETn | +3.3V  | |
+| 4 | SHEILD | GND | |
 
 ### PWM1, PWM2 ports
 
