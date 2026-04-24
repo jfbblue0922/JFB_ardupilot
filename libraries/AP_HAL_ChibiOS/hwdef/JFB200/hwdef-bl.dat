@@ -2,12 +2,11 @@
 ## for the JFB200 hardware
 
 ## board ID for firmware load
-APJ_BOARD_ID 1200
+APJ_BOARD_ID AP_HW_JFB200
 
 ## MCU class and specific type
 MCU STM32H7xx STM32H755xx
 define CORE_CM7
-#define SMPS_PWR
 
 ## crystal frequency 24MHz
 OSCILLATOR_HZ 24000000
@@ -22,17 +21,8 @@ FLASH_RESERVE_START_KB 0
 ## with 2M flash we can afford to optimize for speed
 FLASH_SIZE_KB 2048
 
-## USB setup
-#USB_VENDOR  0x0A8E  # JAE
-#USB_PRODUCT 0x8888  # This is temp Number
-USB_STRING_MANUFACTURER "Japan Aviation Electronics Industry Ltd."
-USB_STRING_PRODUCT "JFB-200"
-
 ## ChibiOS system timer
 STM32_ST_USE_TIMER 2
-
-## optimize
-env OPTIMIZE -Os
 
 ## order of UARTs (and USB)
 ## SERIAL   | 0  |  1  |  2  |  3   |
@@ -113,7 +103,6 @@ PJ2  VDD_3V3_SENSORS_EN  OUTPUT LOW
 PG0  VDD_3V3_SENSORS2_EN OUTPUT LOW   # VDD_3V3_GPS_EN
 PJ4  VDD_3V3_SENSORS3_EN OUTPUT LOW   # BUZZER_VCC_EN
 
-#PI13 nVDD_3V3_SD_CARD_EN OUTPUT HIGH  # HEATER_CEn
 PI13 HEATER_CEn          OUTPUT HIGH  # HEATER_CEn
 
 ## Control of Spektrum power pin
@@ -171,15 +160,11 @@ PB4  SDMMC2_D3  SDMMC2 SPEED_LOW
 define FATFS_HAL_DEVICE SDCD2
 PC13 SD_CARD_IN INPUT
 
-# LEDs
+## LEDs
 PE3 DUMMY1         OUTPUT HIGH  # LED_REDn
 PE4 LED_BOOTLOADER OUTPUT HIGH  # LED_GREENn
-#PE5 LED_ACTIVITY   OUTPUT HIGH  # LED_BLUEn
 PE5 DUMMY2         OUTPUT HIGH  # LED_BLUEn
 define HAL_LED_ON 0
-
-## enable DFU by default
-#ENABLE_DFU_BOOT 1
 
 ## Ethernet
 PH2 GPIO_ETH_ENABLE OUTPUT LOW SPEED_VERYLOW  # ETH_RMII_POWER_EN
