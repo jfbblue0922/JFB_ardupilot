@@ -3,6 +3,9 @@
 The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
 
 ## Features
+- General
+  The JFB-200 consists of an octa module with a CPU and sensors—and an I/O board.
+  Some of the sensors mounted on the octa module are vibration-isolated and feature built-in heaters.
 - Processor
   - STM32H755 microcontroller
 - Sensors
