@@ -163,7 +163,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
-| 1 | VCC | +5V |
+| 1 | VCChigh | +5V |
 | 2 | PWM(1) or (9) | +3.3V or +5V |
 | 3 | PWM(2) or (10) | +3.3V or +5V |
 | 4 | PWM(3) or (11) | +3.3V or +5V |
@@ -176,8 +176,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### SPI port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | SPI5_SCK | +3.3V |
 | 3 | SPI5_MISO | +3.3V |
@@ -188,17 +188,17 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### CAN1, CAN2 ports
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | CAN_H | |
 | 3 | CAN_L | |
 | 4 | GND | |
 
 ### ADC/IO port
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | VCC | +5V |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
+| 1 | VCChigh | +3.3V |
 | 2 | CAP1 | +3.3V |
 | 3 | CAP2 | +3.3V |
 | 4 | AIN3 | +3.3V |
@@ -207,8 +207,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### TELEM1, TELEM2, TELEM3 ports
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
@@ -218,8 +218,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### GPS2 port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
@@ -229,8 +229,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### ETH port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | RXN | |
 | 2 | RXP | |
 | 3 | TXN | |
@@ -238,8 +238,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### GPS1 port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
@@ -253,28 +253,28 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### BUZZER port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | BUZZER VCC | +24V/GND |
 | 2 | GND | |
 
 ### RCIN/UART port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
+| 1 | VCChigh | +5V |
+| 2 | TX (OUT) | +3.3V | SOUT |
 | 3 | RX (IN) | +3.3V |
 | 4 | RSSI | +3.3V |
-| 5 | PPM | +3.3V |
+| 5 | PPM | +3.3V | Low Reso |
 | 6 | TX (OUT) | +3.3V |
-| 7 | RX (IN) | +3.3V |
+| 7 | RX (IN) | +3.3V | RCIN |
 | 8 | GND | |
 
 ### I2C port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | I2C4 SCL | +3.3V |
 | 3 | I2C4 SDA | +3.3V |
@@ -282,121 +282,39 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### USB port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
+| 1 | VCC | +5V | Power IN |
+| 2 | D_Plus |  |
+| 3 | D_minus | |
+| 4 | GND | |
 
 ### RCIN port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | RCIN | +3.3V |
-| 2 | VCC | +5V |
+| 2 | VCChigh | +5V |
 | 3 | GND | |
 
 ### S.OUT port
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | S.OUT | +3.3V |
-| 2 | VCC | +5V |
+| 2 | VCChigh | +5V |
 | 3 | GND | |
 
 ### POWER1, POWER2 ports
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | VCC IN | +5V |
-| 2 | VCC IN | +5V |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
+| 1 | VCC IN | +4.9V ～ +5V | Power IN |
+| 2 | VCC IN | +4.9V ～ +5V | Power IN |
 | 3 | CURRENT | +3.3V |
 | 4 | VOLTAGE | +3.3V |
 | 5 | GND | |
 | 6 | GND | |
-
-
-### SBUS Out port
-
-The SBUSo port is a port attached to the IO processor which can be
-used to output all servo channels via SBUS. It is enabled by setting
-the BRD_SBUS_OUT parameter.
-
-The pinout below for the SBUSo port is labelled so that GND is closest
-to the cube. The 5V pin on the SBUS output port is connected to the
-servo rail.
-
-When SBUS output is disabled (by setting BRD_SBUS_OUT to 0) you can
-use the port for analog RSSI input from receivers. To enable for RSSI
-input you need to set:
-
-- BRD_SBUS_OUT 0
-- RSSI_TYPE 1
-- RSSI_PIN 103
-
-You cannot have both SBUS output and analog RSSI input at the same time.
-
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | GND | GND |
-| 2 | 5v(Vservo) | +5.0V |
-| 3 | TX (OUT) | +3.3V |
-
-### SPKT port
-
-The SPKT port provides a connector for Spektrum satellite
-receivers. It is needed to allow for software controlled binding of
-satellite receivers.
-
-The pinout of the SPKT port given below is given with the 3.3V power
-pin closest to the cube (pin 3).
-
-   | Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | RX (IN) | +3.3V |
-| 2 | GND | GND |
-| 3 | 3.3v | +3.3V |
-
-
-
-### I2C2
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | SCL | +3.3 (pullups) |
-| 3 (blk) | SDA | +3.3 (pullups) |
-| 4 (blk) | GND | GND |
-
-### FMU and IO SWD
-
-When the case is removed there are two SWD connectors, one for FMU and
-the other for IOMCU. The IO SWD connector is the one closer to the
-servo rail. The GND pin of both connectors is the one furthest from
-the servo rail.
-
-| Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX | +3.3 |
-| 3 | RX | +3.3 |
-| 4 | SWDIO | +3.3 |
-| 5 | SWCLK | +3.3 |
-| 6 | GND | GND |
-
-
-### USB
-
-   | Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | D_plus | +3.3V |
-| 3 (blk) | D_minus | +3.3V |
-| 4 (blk) | GND | GND |
-| 5 (blk) | BUZZER | battery voltage |
-| 6 (blk) | Boot/Error LED |  |
 
 ## Loading Firmware
 
