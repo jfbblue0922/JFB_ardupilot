@@ -270,18 +270,61 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 5 | SDA I2C2 | +3.3V |
 | 6 | GND | |
 
-### CAN1, CAN2 port
+### I2C port
 
-The CONS port is an additional UART connected to SERIAL5. The pinout
-in the CONS port table below is ordered so that the GND pin is closest
-to the cube. The TX pin is closest to the servo rail.
-
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
-| 2 | CAN_H | +3.3V |
-| 3 | CAN_L | +3.3V |
-| 4 | GND | |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
+### USB port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
+### RCIN port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
+### S.OUT port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
+### POWER1, POWER2 ports
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC IN | +5V |
+| 2 | VCC IN | +5V |
+| 3 | CURRENT | up to +3.3V |
+| 4 | VOLTAGE | up to +3.3V |
+| 5 | GND | |
+| 6 | GND | |
+
 
 ### SBUS Out port
 
@@ -303,7 +346,7 @@ input you need to set:
 
 You cannot have both SBUS output and analog RSSI input at the same time.
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | GND | GND |
 | 2 | 5v(Vservo) | +5.0V |
@@ -327,8 +370,7 @@ pin closest to the cube (pin 3).
 
 
 ### I2C2
-
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 (red) | VCC | +5V |
 | 2 (blk) | SCL | +3.3 (pullups) |
@@ -342,7 +384,7 @@ the other for IOMCU. The IO SWD connector is the one closer to the
 servo rail. The GND pin of both connectors is the one furthest from
 the servo rail.
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX | +3.3 |
@@ -351,18 +393,6 @@ the servo rail.
 | 5 | SWCLK | +3.3 |
 | 6 | GND | GND |
 
-
-
-### POWER1&2
-
-   | Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (red) | VCC | +5V |
-| 3 (blk) | CURRENT | up to +3.3V |
-| 4 (blk) | VOLTAGE | up to +3.3V |
-| 5 (blk) | GND | GND |
-| 6 (blk) | GND | GND |
 
 ### USB
 
