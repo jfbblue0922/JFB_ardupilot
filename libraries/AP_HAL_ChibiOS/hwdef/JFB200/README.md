@@ -22,6 +22,10 @@ The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control
   - two dedicated power input ports for external power bricks
   - two analog battery voltage and current sensing port
 
+## Pinout
+
+## Wiring Diagram
+
 ## UART Mapping
 - SERIAL0 -> USB
 - SERIAL1 -> UART7  (Telem1)
@@ -38,16 +42,15 @@ have RTS/CTS.
 
 ## RC Input
 
-RC input is configured on the port marked DSM/SBUS RC. This connector
+RC input is configured on the port marked RCIN/UART. This connector
 supports all RC protocols. Two cables are available for this port. To
 use software binding of Spektrum satellite receivers you need to use
 the Spektrum satellite cable.
 
 ## PWM Output
 
-The JFB-200 supports up to 16 PWM outputs.
-These are directly attached to the STM32H755 and support all
-PWM protocols.
+The JFB-200 supports up to 16 PWM outputs.PWM1-8 are connected via dedicated output buffers.
+PWM9-16 are connected via bidirectional buffers.
 
 The 16 PWM outputs are in 4 groups:
 
