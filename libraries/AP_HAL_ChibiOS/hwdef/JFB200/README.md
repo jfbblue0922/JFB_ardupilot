@@ -161,8 +161,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### PWM1, PWM2 ports
 
-| Pin | Signal | Volt |
-| --- | --- | --- |
+| Pin | Signal | Volt | Remarks |
+| --- | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | PWM(1) or (9) | +3.3V or +5V |
 | 3 | PWM(2) or (10) | +3.3V or +5V |
