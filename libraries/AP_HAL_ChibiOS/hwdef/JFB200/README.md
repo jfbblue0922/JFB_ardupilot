@@ -101,28 +101,18 @@ The numbering of the GPIOs for PIN variables in ArduPilot is:
 
 ## Analog inputs
 
-The JFB-200 has 9 analog inputs
+The JFB-200 has 10 analog inputs
 
-- ADC Pin0  -> not used
-- ADC Pin1  -> not used
 - ADC Pin2  -> +3.3V Sens
-- ADC Pin3  -> not used
 - ADC Pin4  -> Battery Voltage 2
-- ADC Pin5  -> not used
 - ADC Pin6  -> Battery Current Sensor 2
-- ADC Pin7  -> not used
-- ADC Pin8  -> ADC SPARE 1 (6.6V)
-- ADC Pin9  -> not used
+- ADC Pin8  -> ADC IN 1 (6.6V)
 - ADC Pin10 -> RSSI voltage monitoring
-- ADC Pin11 -> not used
-- ADC Pin12 -> not used
-- ADC Pin13 -> ADC SPARE 2 (3.3V)
+- ADC Pin13 -> ADC IN 2 (3.3V)
 - ADC Pin14 -> SERVORAIL sens
 - ADC Pin15 -> 5V sens
 - ADC Pin16 -> Battery Voltage
-- ADC Pin17 -> not used
 - ADC Pin18 -> Battery Current Sensor
-- ADC Pin19 -> not used
 
 ## I2C Buses
 
@@ -290,6 +280,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 4 | GND | |
 
 ### RCIN port
+2.54mm pitch pin header
 
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
@@ -298,6 +289,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 3 | GND | |
 
 ### S.OUT port
+2.54mm pitch pin header
 
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
@@ -306,6 +298,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 3 | GND | |
 
 ### POWER1, POWER2 ports
+Molex picoblade 5024430670
 
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
