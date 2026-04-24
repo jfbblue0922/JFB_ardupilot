@@ -145,9 +145,161 @@ The JFB-200 has the following dedicated discrete signals
 - Hardware WDT Fail signal output
 - HW reset signal input
 
-## Debug
+## Connectors
 
-The JFB-200 supports SWD debugging on the debug port
+Unless noted otherwise all connectors are JST GH 1.25mm pitch
+
+### TELEM1, TELEM2 ports
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | TX (OUT) | +3.3V |
+| 3 (blk) | RX (IN) | +3.3V |
+| 4 (blk) | CTS | +3.3V |
+| 5 (blk) | RTS | +3.3V |
+| 6 (blk) | GND | GND |
+
+### GPS1 port
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | TX (OUT) | +3.3V |
+| 3 (blk) | RX (IN) | +3.3V |
+| 4 (blk) | SCL I2C1 | +3.3V |
+| 5 (blk) | SDA I2C1 | +3.3V |
+| 6 (blk) | Button | GND |
+| 7 (blk) | button LED | GND |
+| (blk) | GND | GND |
+
+### GPS2 port
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | TX (OUT) | +3.3V |
+| 3 (blk) | RX (IN) | +3.3V |
+| 4 (blk) | SCL I2C2 | +3.3V |
+| 5 (blk) | SDA I2C2 | +3.3V |
+| 6 (blk) | GND | GND |
+
+### CONS port
+
+The CONS port is an additional UART connected to SERIAL5. The pinout
+in the CONS port table below is ordered so that the GND pin is closest
+to the cube. The TX pin is closest to the servo rail.
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | GND | GND |
+| 2 | RX (IN) | +3.3V |
+| 3 | TX (OUT) | +3.3V |
+
+### SBUS Out port
+
+The SBUSo port is a port attached to the IO processor which can be
+used to output all servo channels via SBUS. It is enabled by setting
+the BRD_SBUS_OUT parameter.
+
+The pinout below for the SBUSo port is labelled so that GND is closest
+to the cube. The 5V pin on the SBUS output port is connected to the
+servo rail.
+
+When SBUS output is disabled (by setting BRD_SBUS_OUT to 0) you can
+use the port for analog RSSI input from receivers. To enable for RSSI
+input you need to set:
+
+- BRD_SBUS_OUT 0
+- RSSI_TYPE 1
+- RSSI_PIN 103
+
+You cannot have both SBUS output and analog RSSI input at the same time.
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | GND | GND |
+| 2 | 5v(Vservo) | +5.0V |
+| 3 | TX (OUT) | +3.3V |
+
+### SPKT port
+
+The SPKT port provides a connector for Spektrum satellite
+receivers. It is needed to allow for software controlled binding of
+satellite receivers.
+
+The pinout of the SPKT port given below is given with the 3.3V power
+pin closest to the cube (pin 3).
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | RX (IN) | +3.3V |
+| 2 | GND | GND |
+| 3 | 3.3v | +3.3V |
+
+### ADC
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | ADC IN |  |
+| 3 (blk) | GND | GND |
+
+### I2C2
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | SCL | +3.3 (pullups) |
+| 3 (blk) | SDA | +3.3 (pullups) |
+| 4 (blk) | GND | GND |
+
+### FMU and IO SWD
+
+When the case is removed there are two SWD connectors, one for FMU and
+the other for IOMCU. The IO SWD connector is the one closer to the
+servo rail. The GND pin of both connectors is the one furthest from
+the servo rail.
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX | +3.3 |
+| 3 | RX | +3.3 |
+| 4 | SWDIO | +3.3 |
+| 5 | SWCLK | +3.3 |
+| 6 | GND | GND |
+
+### CAN1&2
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | CAN_H | +12V |
+| 3 (blk) | CAN_L | +12V |
+| 4 (blk) | GND | GND |
+
+### POWER1&2
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (red) | VCC | +5V |
+| 3 (blk) | CURRENT | up to +3.3V |
+| 4 (blk) | VOLTAGE | up to +3.3V |
+| 5 (blk) | GND | GND |
+| 6 (blk) | GND | GND |
+
+### USB
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | D_plus | +3.3V |
+| 3 (blk) | D_minus | +3.3V |
+| 4 (blk) | GND | GND |
+| 5 (blk) | BUZZER | battery voltage |
+| 6 (blk) | Boot/Error LED |  |
 
 ## Loading Firmware
 
