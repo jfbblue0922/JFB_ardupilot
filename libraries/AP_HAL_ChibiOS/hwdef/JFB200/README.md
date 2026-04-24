@@ -3,23 +3,26 @@
 The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)
 
 ## Features
-
-- STM32H755 microcontroller
-- Three IMUs: ICM45686, ASM330 and IIM42653 SPI IMU
-- Two BAROs: two BMP390 SPI barometer
-- Two Mags: builtin I2C BMM350 and IST8310 magnetometer
-- microSD card slot
-- 6 UARTs plus USB (including GPS, RCIN and S.OUT)
-- 16 PWM outputs (8 PWM shares GPIO)
-- Three I2C and two CAN ports
-- Two external Buzzer (Open/Drain and 27V Out)
-- external safety Switch
-- voltage monitoring for servo rail and Vcc
-- two dedicated power input ports for external power bricks
-- Ethernet port
+- Processor
+  - STM32H755 microcontroller
+- Sensors
+  - Three IMUs: ICM45686, ASM330 and IIM42653 SPI IMU
+  - Two BAROs: two BMP390 SPI barometer
+  - Two Mags: builtin I2C BMM350 and IST8310 magnetometer
+- Interfaces
+  - microSD card slot
+  - 6 UARTs plus USB (including GPS, RCIN and S.OUT)
+  - 16 PWM outputs (8 PWM shares GPIO)
+  - Three I2C and two CAN ports
+  - Two external Buzzer (Open/Drain and 27V Out)
+  - external safety Switch
+  - voltage monitoring for servo rail and Vcc
+  - Ethernet port
+- Power
+  - two dedicated power input ports for external power bricks
+  - two analog battery voltage and current sensing port
 
 ## UART Mapping
-
 - SERIAL0 -> USB
 - SERIAL1 -> UART7  (Telem1)
 - SERIAL2 -> UART5  (Telem2)
