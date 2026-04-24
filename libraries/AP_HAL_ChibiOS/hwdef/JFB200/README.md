@@ -1,6 +1,6 @@
 # JFB-200 Flight Controller
 
-The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)  
+JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control/eVTOL/FlightController/)  
 The JFB-200 consists of an octa module with a CPU and sensors—and an I/O board.  
 Some of the sensors mounted on the octa module are vibration-isolated and feature built-in heaters.  
 ![JFB-200 overview](JFB-200_overview.png)
@@ -29,8 +29,6 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 
 ![JFB-200 pinout](JFB-200_pinout.png)
 
-## Wiring Diagram
-
 ## UART Mapping
 - SERIAL0 -> USB
 - SERIAL1 -> UART7  (TELEM1)
@@ -42,52 +40,44 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 - SERIAL7 -> USART6 (S.OUT)
 - SERIAL8 -> USB
 
-The Telem1, Telem2 and Telem3 ports have RTS/CTS pins, the other UARTs do not
-have RTS/CTS.
+The Telem1, Telem2 and Telem3 ports have RTS/CTS pins, the other UARTs do not have RTS/CTS.
 
 ## RC Input
 
-RC input is configured on the port marked RCIN/UART. This connector
-supports all RC protocols. Two cables are available for this port. To
-use software binding of Spektrum satellite receivers you need to use
-the Spektrum satellite cable.
+RC input is configured on the port marked RCIN/UART.  
+This connector supports all RC protocols. Two cables are available for this port.  
+To use software binding of Spektrum satellite receivers you need to use the Spektrum satellite cable.
 
 ## PWM Output
 
-The JFB-200 supports up to 16 PWM outputs.PWM1-8 are connected via dedicated output buffers.
-PWM9-16 are connected via bidirectional buffers.
+The JFB-200 supports up to 16 PWM outputs.PWM1-8 are connected via dedicated output buffers.  
+PWM 9-16 are connected via bidirectional buffers.
 
-The 16 PWM outputs are in 4 groups:
-
+The 16 PWM outputs are in 4 groups:  
 - PWM  1,  2,  3 and  4 in group1 (TIM1)
 - PWM  5,  6,  7 and  8 in group2 (TIM3)
 - PWM  9, 10, 11 and 12 in group3 (TIM4)
 - PWM 13, 14, 15 and 16 in group4 (TIM8)
 
-Channels within the same group need to use the same output rate. If
-any channel in a group uses DShot then all channels in the group need
-to use DShot.
-PWM output voltage can be changed setting BRD_PWM_COLT_SEL parameter.
+Channels within the same group need to use the same output rate.  
+If any channel in a group uses DShot then all channels in the group need to use DShot.  
+PWM output voltage can be changed setting BRD_PWM_VOLT_SEL parameter.  
 
 ## Battery Monitoring
 
-The board has two dedicated power monitor ports on 8 pin connectors.
-The correct battery setting parameters are dependent on the type of
-power brick which is connected.
+The board has two dedicated power monitor ports on 8 pin connectors.  
+The correct battery setting parameters are dependent on the type of power brick which is connected.  
 Recomended input voltage is 4.9 to 5.5 volt.
 
 ## Compass
 
-The JFB-200 has two builtin compasses BMM350 and IST8310. Due to potential
-interference the board is usually used with an external I2C compass as
-part of a GPS/Compass combination.
+The JFB-200 has two builtin compasses BMM350 and IST8310.  
+Due to potential interference the board is usually used with an external I2C compass as part of a GPS/Compass combination.
 
 ## GPIOs
 
-The 8 PWM ports (PMW9-16) can be used as GPIOs (relays, buttons, RPM etc).
-
-The numbering of the GPIOs for PIN variables in ArduPilot is:
-
+The 8 PWM ports (PMW 9-16) can be used as GPIOs (relays, buttons, RPM etc).  
+The numbering of the GPIOs for PIN variables in ArduPilot is:  
 - PWM(9)  50
 - PWM(10) 51
 - PWM(11) 52
@@ -311,7 +301,5 @@ Molex picoblade 5024430670
 
 ## Loading Firmware
 
-The board comes pre-installed with an ArduPilot compatible bootloader,
-allowing the loading of *.apj firmware files with any ArduPilot
-compatible ground station.
+The board comes pre-installed with an ArduPilot compatible bootloader, allowing the loading of *.apj firmware files with any ArduPilot compatible ground station.  
 The JFB-200 can be booted into DFU mode using a dedicated adapter.
