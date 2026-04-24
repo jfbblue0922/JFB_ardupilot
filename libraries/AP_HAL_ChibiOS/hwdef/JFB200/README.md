@@ -149,40 +149,42 @@ The JFB-200 has the following dedicated discrete signals
 
 Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
-### TELEM1, TELEM2 ports
+### TELEM1, TELEM2, TELEM3 ports
 
    | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | TX (OUT) | +3.3V |
-| 3 (blk) | RX (IN) | +3.3V |
-| 4 (blk) | CTS | +3.3V |
-| 5 (blk) | RTS | +3.3V |
-| 6 (blk) | GND | GND |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | CTS | +3.3V |
+| 5 | RTS | +3.3V |
+| 6 | GND | GND |
 
 ### GPS1 port
 
    | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | TX (OUT) | +3.3V |
-| 3 (blk) | RX (IN) | +3.3V |
-| 4 (blk) | SCL I2C1 | +3.3V |
-| 5 (blk) | SDA I2C1 | +3.3V |
-| 6 (blk) | Button | GND |
-| 7 (blk) | button LED | GND |
-| (blk) | GND | GND |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C1 | +3.3V |
+| 5 | SDA I2C1 | +3.3V |
+| 6 | Button |  |
+| 7 | button LED |  |
+| 8 | VCC3 | +3.3V |
+| 9 | BUZZER | OPEN/DRAIN |
+| 10 | GND |  |
 
 ### GPS2 port
 
    | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | TX (OUT) | +3.3V |
-| 3 (blk) | RX (IN) | +3.3V |
-| 4 (blk) | SCL I2C2 | +3.3V |
-| 5 (blk) | SDA I2C2 | +3.3V |
-| 6 (blk) | GND | GND |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
 
 ### CONS port
 
