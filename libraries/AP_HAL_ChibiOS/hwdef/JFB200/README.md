@@ -40,7 +40,7 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 - SERIAL7 -> USART6 (S.OUT)
 - SERIAL8 -> USB
 
-The Telem1, Telem2 and Telem3 ports have RTS/CTS pins, the other UARTs do not have RTS/CTS.
+The TELEM1, TELEM2 and TELEM3 ports have RTS/CTS pins, the other UARTs do not have RTS/CTS.
 
 ## RC Input
 
