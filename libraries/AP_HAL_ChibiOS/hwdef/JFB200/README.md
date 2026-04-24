@@ -24,6 +24,8 @@ The JFB-200 flight controller of [JAE](https://www.jae.com/Motion_Sensor_Control
 
 ## Pinout
 
+![JFB-200 pinout](JFB200 pinout.png)
+
 ## Wiring Diagram
 
 ## UART Mapping
