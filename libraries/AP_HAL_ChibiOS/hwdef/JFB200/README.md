@@ -33,9 +33,9 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 
 ## UART Mapping
 - SERIAL0 -> USB
-- SERIAL1 -> UART7  (Telem1)
-- SERIAL2 -> UART5  (Telem2)
-- SERIAL3 -> USART3 (Telem3)
+- SERIAL1 -> UART7  (TELEM1)
+- SERIAL2 -> UART5  (TELEM2)
+- SERIAL3 -> USART3 (TELEM3)
 - SERIAL4 -> USART1 (GPS1)
 - SERIAL5 -> USART2 (GPS2)
 - SERIAL6 -> UART8  (RCIN)
@@ -188,7 +188,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 ### ADC/IO port
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
-| 1 | VCChigh | +3.3V |
+| 1 | VCC3high | +3.3V |
 | 2 | CAP1 | +3.3V |
 | 3 | CAP2 | +3.3V |
 | 4 | AIN3 | +3.3V |
@@ -204,7 +204,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 3 | RX (IN) | +3.3V |
 | 4 | CTS | +3.3V |
 | 5 | RTS | +3.3V |
-| 6 | GND | GND |
+| 6 | GND ||
 
 ### GPS2 port
 
@@ -253,7 +253,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
 | 1 | VCChigh | +5V |
-| 2 | TX (OUT) | +3.3V | SOUT |
+| 2 | TX (OUT) | +3.3V | S.OUT |
 | 3 | RX (IN) | +3.3V |
 | 4 | RSSI | +3.3V |
 | 5 | PPM | +3.3V | Low Reso |
