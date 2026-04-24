@@ -67,6 +67,7 @@ The 16 PWM outputs are in 4 groups:
 Channels within the same group need to use the same output rate. If
 any channel in a group uses DShot then all channels in the group need
 to use DShot.
+PWM output voltage can be changed setting BRD_PWM_COLT_SEL parameter.
 
 ## Battery Monitoring
 
@@ -185,23 +186,24 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 6 | N.C. | |
 | 7 | GND | |
 
-### CAN1&2
+### CAN1, CAN2 ports
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | CAN_H | +12V |
-| 3 (blk) | CAN_L | +12V |
-| 4 (blk) | GND | GND |
+| 1 | VCC | +5V |
+| 2 | CAN_H | +12V |
+| 3 | CAN_L | +12V |
+| 4 | GND | |
 
-### ADC/IO
-
+### ADC/IO port
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | CAN_H | +12V |
-| 3 (blk) | CAN_L | +12V |
-| 4 (blk) | GND | GND |
+| 1 | VCC | +5V |
+| 2 | CAP1 | +3.3V |
+| 3 | CAP2 | +3.3V |
+| 4 | AIN3 | +3.3V |
+| 5 | AIN6 | +6.6V |
+| 6 | GND | |
 
 ### TELEM1, TELEM2, TELEM3 ports
 
@@ -221,20 +223,18 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
+| 4 | I2C2 SCL | +3.3V |
+| 5 | I2C2 SDA | +3.3V |
 | 6 | GND | |
 
 ### ETH port
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| 1 | RXN | |
+| 2 | RXP | |
+| 3 | TXN | |
+| 4 | TXP | |
 
 ### GPS1 port
 
@@ -243,10 +243,10 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C1 | +3.3V |
-| 5 | SDA I2C1 | +3.3V |
-| 6 | Button |  |
-| 7 | button LED |  |
+| 4 | I2C1 SCL | +3.3V(pullup) |
+| 5 | I2C1 SDA| +3.3V(pullup) |
+| 6 | Safety Button | +3.3V |
+| 7 | Safety LED | +3.3V |
 | 8 | VCC3 | +3.3V |
 | 9 | BUZZER | OPEN/DRAIN |
 | 10 | GND |  |
@@ -255,9 +255,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 6 | GND | |
+| 1 | BUZZER VCC | +24V/GND |
+| 2 | GND | |
 
 ### RCIN/UART port
 
@@ -266,20 +265,20 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
 | 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| 4 | RSSI | +3.3V |
+| 5 | PPM | +3.3V |
+| 6 | TX (OUT) | +3.3V |
+| 7 | RX (IN) | +3.3V |
+| 8 | GND | |
 
 ### I2C port
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| 2 | I2C4 SCL | +3.3V |
+| 3 | I2C4 SDA | +3.3V |
+| 4 | GND | |
 
 ### USB port
 
@@ -296,23 +295,17 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| 1 | RCIN | +3.3V |
+| 2 | VCC | +5V |
+| 3 | GND | |
 
 ### S.OUT port
 
 | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 | VCC | +5V |
-| 2 | TX (OUT) | +3.3V |
-| 3 | RX (IN) | +3.3V |
-| 4 | SCL I2C2 | +3.3V |
-| 5 | SDA I2C2 | +3.3V |
-| 6 | GND | |
+| 1 | S.OUT | +3.3V |
+| 2 | VCC | +5V |
+| 3 | GND | |
 
 ### POWER1, POWER2 ports
 
@@ -320,8 +313,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | --- | --- | --- |
 | 1 | VCC IN | +5V |
 | 2 | VCC IN | +5V |
-| 3 | CURRENT | up to +3.3V |
-| 4 | VOLTAGE | up to +3.3V |
+| 3 | CURRENT | +3.3V |
+| 4 | VOLTAGE | +3.3V |
 | 5 | GND | |
 | 6 | GND | |
 
