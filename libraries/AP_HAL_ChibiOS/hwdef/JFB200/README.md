@@ -152,7 +152,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### AUX port
 
-| Pin | Signal | Volt |
+| Pin | Signal | Volt | Remarks |
 | --- | --- | --- |
 | 1 | ARMEDn | +3.3V |
 | 2 | WDT_FAILn | +3.3V  |
@@ -179,10 +179,10 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
-| 2 | SPI_SCK | +3.3V |
-| 3 | SPI_MISO | +3.3V |
-| 4 | SPI_MOSI | +3.3V |
-| 5 | SPI_CSn | +3.3V |
+| 2 | SPI5_SCK | +3.3V |
+| 3 | SPI5_MISO | +3.3V |
+| 4 | SPI5_MOSI | +3.3V |
+| 5 | SPI5_CSn | +3.3V |
 | 6 | N.C. | |
 | 7 | GND | |
 
@@ -191,8 +191,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
-| 2 | CAN_H | +12V |
-| 3 | CAN_L | +12V |
+| 2 | CAN_H | |
+| 3 | CAN_L | |
 | 4 | GND | |
 
 ### ADC/IO port
