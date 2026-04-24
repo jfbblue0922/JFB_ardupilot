@@ -149,6 +149,43 @@ The JFB-200 has the following dedicated discrete signals
 
 Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
+### AUX port
+
+   | Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | ARMEDn | +3.3V |
+| 2 | WDT_FAILn | +3.3V  |
+| 3 | EXT_RESETn | +3.3V  |
+| 4 | SHEILD | GND |
+
+### PWM1, PWM2 ports
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | PWM(1) or (9) | +3.3V or +5V |
+| 3 | PWM(2) or (10) | +3.3V or +5V |
+| 4 | PWM(3) or (11) | +3.3V or +5V |
+| 5 | PWM(4) or (12) | +3.3V or +5V |
+| 6 | PWM(5) or (13) | +3.3V or +5V |
+| 7 | PWM(6) or (14) | +3.3V or +5V |
+| 8 | PWM(7) or (15) | +3.3V or +5V |
+| 9 | PWM(8) or (16) | +3.3V or +5V |
+| 10 | GND | |
+
+### SPI port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | SPI_SCK | +3.3V |
+| 3 | SPI_MISO | +3.3V |
+| 4 | SPI_MOSI | +3.3V |
+| 5 | SPI_CSn | +3.3V |
+| 6 | N.C. | |
+| 7 | GND | |
+
+
 ### TELEM1, TELEM2, TELEM3 ports
 
    | Pin | Signal | Volt |
@@ -186,7 +223,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 5 | SDA I2C2 | +3.3V |
 | 6 | GND | |
 
-### CONS port
+### CAN1, CAN2 port
 
 The CONS port is an additional UART connected to SERIAL5. The pinout
 in the CONS port table below is ordered so that the GND pin is closest
@@ -194,9 +231,10 @@ to the cube. The TX pin is closest to the servo rail.
 
    | Pin | Signal | Volt |
 | --- | --- | --- |
-| 1 | GND | GND |
-| 2 | RX (IN) | +3.3V |
-| 3 | TX (OUT) | +3.3V |
+| 1 | VCC | +5V |
+| 2 | CAN_H | +3.3V |
+| 3 | CAN_L | +3.3V |
+| 4 | GND | |
 
 ### SBUS Out port
 
@@ -239,13 +277,7 @@ pin closest to the cube (pin 3).
 | 2 | GND | GND |
 | 3 | 3.3v | +3.3V |
 
-### ADC
 
-   | Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | ADC IN |  |
-| 3 (blk) | GND | GND |
 
 ### I2C2
 
