@@ -151,7 +151,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 
 ### AUX port
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | ARMEDn | +3.3V |
 | 2 | WDT_FAILn | +3.3V  |
@@ -185,10 +185,27 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 6 | N.C. | |
 | 7 | GND | |
 
+### CAN1&2
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | CAN_H | +12V |
+| 3 (blk) | CAN_L | +12V |
+| 4 (blk) | GND | GND |
+
+### ADC/IO
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 (red) | VCC | +5V |
+| 2 (blk) | CAN_H | +12V |
+| 3 (blk) | CAN_L | +12V |
+| 4 (blk) | GND | GND |
 
 ### TELEM1, TELEM2, TELEM3 ports
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
@@ -197,9 +214,31 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 5 | RTS | +3.3V |
 | 6 | GND | GND |
 
+### GPS2 port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
+### ETH port
+
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 3 | RX (IN) | +3.3V |
+| 4 | SCL I2C2 | +3.3V |
+| 5 | SDA I2C2 | +3.3V |
+| 6 | GND | |
+
 ### GPS1 port
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
@@ -212,9 +251,17 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 9 | BUZZER | OPEN/DRAIN |
 | 10 | GND |  |
 
-### GPS2 port
+### BUZZER port
 
-   | Pin | Signal | Volt |
+| Pin | Signal | Volt |
+| --- | --- | --- |
+| 1 | VCC | +5V |
+| 2 | TX (OUT) | +3.3V |
+| 6 | GND | |
+
+### RCIN/UART port
+
+| Pin | Signal | Volt |
 | --- | --- | --- |
 | 1 | VCC | +5V |
 | 2 | TX (OUT) | +3.3V |
@@ -304,14 +351,7 @@ the servo rail.
 | 5 | SWCLK | +3.3 |
 | 6 | GND | GND |
 
-### CAN1&2
 
-   | Pin | Signal | Volt |
-| --- | --- | --- |
-| 1 (red) | VCC | +5V |
-| 2 (blk) | CAN_H | +12V |
-| 3 (blk) | CAN_L | +12V |
-| 4 (blk) | GND | GND |
 
 ### POWER1&2
 
