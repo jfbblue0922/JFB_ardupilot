@@ -14,10 +14,10 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
   - Two Mags: builtin I2C BMM350 and IST8310 magnetometer
 - Interfaces
   - microSD card slot
-  - 6 UARTs plus USB (including GPS, RCIN and S.OUT)
+  - 7 UARTs plus USB (including GPS1, GPS2, RCIN and S.OUT)
   - 16 PWM outputs (8 PWM shares GPIO)
   - Three I2C and two CAN ports
-  - Two external Buzzer (Open/Drain and 27V Out)
+  - Two external Buzzer (Open/Drain and 24V Out)
   - external safety Switch
   - voltage monitoring for servo rail and Vcc
   - Ethernet port
@@ -265,8 +265,8 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
 | 1 | VCC | +5V | Power IN |
-| 2 | D_Plus |  |
-| 3 | D_minus | |
+| 2 | D_Minus |  |
+| 3 | D_Plus | |
 | 4 | GND | |
 
 ### RCIN port
