@@ -8,12 +8,17 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 ## Features
 
 - Processor
+
   - STM32H755 microcontroller
+
 - Sensors
+
   - Three IMUs: ICM45686, ASM330 and IIM42653 SPI IMU
   - Two BAROs: two BMP390 SPI barometer
   - Two Mags: builtin I2C BMM350 and IST8310 magnetometer
+
 - Interfaces
+
   - microSD card slot
   - 7 UARTs plus USB (including GPS1, GPS2, RCIN and S.OUT)
   - 16 PWM outputs (8 PWM shares GPIO)
@@ -22,7 +27,9 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
   - external safety Switch
   - voltage monitoring for servo rail and Vcc
   - Ethernet port
+
 - Power
+
   - two dedicated power input ports for external power bricks
   - two analog battery voltage and current sensing port
 
@@ -56,6 +63,7 @@ The JFB-200 supports up to 16 PWM outputs.PWM1-8 are connected via dedicated out
 PWM 9-16 are connected via bidirectional buffers.
 
 The 16 PWM outputs are in 4 groups:  
+
 - PWM  1,  2,  3 and  4 in group1 (TIM1)
 - PWM  5,  6,  7 and  8 in group2 (TIM3)
 - PWM  9, 10, 11 and 12 in group3 (TIM4)
@@ -80,6 +88,7 @@ Due to potential interference the board is usually used with an external I2C com
 
 The 8 PWM ports (PMW 9-16) can be used as GPIOs (relays, buttons, RPM etc).  
 The numbering of the GPIOs for PIN variables in ArduPilot is:  
+
 - PWM(9)  50
 - PWM(10) 51
 - PWM(11) 52
