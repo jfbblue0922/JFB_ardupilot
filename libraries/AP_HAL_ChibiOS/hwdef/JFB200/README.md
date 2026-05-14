@@ -6,6 +6,7 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 ![JFB-200 overview](JFB-200_overview.png)
 
 ## Features
+
 - Processor
   - STM32H755 microcontroller
 - Sensors
@@ -30,6 +31,7 @@ Some of the sensors mounted on the octa module are vibration-isolated and featur
 ![JFB-200 pinout](JFB-200_pinout.png)
 
 ## UART Mapping
+
 - SERIAL0 -> USB
 - SERIAL1 -> UART7  (TELEM1)
 - SERIAL2 -> UART5  (TELEM2)
@@ -176,6 +178,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 4 | GND | |
 
 ### ADC/IO port
+
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
 | 1 | VCC3high | +3.3V |
@@ -270,6 +273,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 4 | GND | |
 
 ### RCIN port
+
 2.54mm pitch pin header
 
 | Pin | Signal | Volt | Remarks |
@@ -279,6 +283,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 3 | GND | |
 
 ### S.OUT port
+
 2.54mm pitch pin header
 
 | Pin | Signal | Volt | Remarks |
@@ -288,6 +293,7 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 3 | GND | |
 
 ### POWER1, POWER2 ports
+
 Molex picoblade 5024430670
 
 | Pin | Signal | Volt | Remarks |
