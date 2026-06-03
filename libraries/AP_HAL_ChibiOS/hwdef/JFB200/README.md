@@ -305,14 +305,14 @@ Unless noted otherwise all connectors are JST GH 1.25mm pitch
 | 9 | BUZZER | OPEN/DRAIN |
 | 10 | GND |  |
 
-### BUZZER port **(See Note **¹**)**
+### BUZZER port (See Note¹)
 
 | Pin | Signal | Volt | Remarks |
 | --- | --- | --- | --- |
 | 1 | BUZZER VCC | +24V/GND |
 | 2 | GND | |
 
-- **¹** **[CAUTION]** To prevent malfunction caused by overvoltage, do not connect any buzzer other than 24V.
+- **¹**: **[CAUTION]** To prevent malfunction caused by overvoltage, do not connect any buzzer other than 24V.
 
 ### RCIN/UART port
 
