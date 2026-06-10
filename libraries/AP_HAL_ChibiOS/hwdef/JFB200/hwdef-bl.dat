@@ -1,7 +1,7 @@
 ## hw definition file for processing by chibios_hwdef.py
 ## for the JFB200 hardware
 
-## board ID for firmware load
+## board ID. See Tools/AP_Bootloader/board_types.txt
 APJ_BOARD_ID AP_HW_JFB200
 
 ## MCU class and specific type
@@ -29,7 +29,7 @@ STM32_ST_USE_TIMER 2
 SERIAL_ORDER OTG1 UART7 UART5 UART4
 
 ## serial port for stdout, set SERIAL3_PROTOCOL 0(none) when using
-## The value for STDOUT_SERIAL is a serial device name, and must be for a 
+## The value for STDOUT_SERIAL is a serial device name, and must be for a
 ## serial device for which pins are defined in this file. For example, SD3
 ## is for USART3 (SD3 == "serial device 3" in ChibiOS).
 STDOUT_SERIAL SD4
