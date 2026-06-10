@@ -76,16 +76,24 @@ The 8 PWM ports (PMW9-16) can be used as GPIOs (relays, buttons, RPM etc).
 
 The numbering of the GPIOs for PIN variables in ArduPilot is:
 
-- PWM(9)  50
-- PWM(10) 51
-- PWM(11) 52
-- PWM(12) 53
-- PWM(13) 54
-- PWM(14) 55
-- PWM(15) 56
-- PWM(16) 57
-- FMU_CAP1 58
-- FMU_CAP2 59
+- PWM(1)  50
+- PWM(2)  51
+- PWM(3)  52
+- PWM(4)  53
+- PWM(5)  54
+- PWM(6)  55
+- PWM(7)  56
+- PWM(8)  57
+- PWM(9)  58
+- PWM(10) 59
+- PWM(11) 60
+- PWM(12) 61
+- PWM(13) 62
+- PWM(14) 63
+- PWM(15) 64
+- PWM(16) 65
+- FMU_CAP1 66
+- FMU_CAP2 67
 
 ## Analog inputs
 
